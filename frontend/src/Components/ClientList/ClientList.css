@@ -1,0 +1,29 @@
+.client-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* 🔷 Header */
+.client-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Title */
+.client-list__title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+/* Optional: export button spacing fix */
+.client-list__header button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

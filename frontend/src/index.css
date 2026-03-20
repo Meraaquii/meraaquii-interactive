@@ -42,12 +42,7 @@ body.dark {
 
 /* App shell */
 
-body.dark .page-title {
-  background: #1e2e3a;
-}
-
 .page-title h2 {
-  font-family: "Rajdhani", sans-serif;
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.14em;

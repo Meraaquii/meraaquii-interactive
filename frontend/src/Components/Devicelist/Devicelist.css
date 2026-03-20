@@ -1,0 +1,24 @@
+.device-list {
+  width: 100%;
+}
+
+/* Header */
+.device-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  background-color: #eef2f5;
+  padding: 10px 20px;
+}
+
+.device-list__title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-align: start;
+  position: relative;
+  left: 4px;
+}

@@ -1,86 +1,65 @@
-// ── Table.jsx ──
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { MdChevronLeft, MdChevronRight } from "react-icons/md";
+import { FiSearch } from "react-icons/fi";
 import "./Table.css";
 
-function Icon({ d, size = 15 }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {[].concat(d).map((path, i) => (
-        <path key={i} d={path} />
-      ))}
-    </svg>
-  );
-}
-
-// Column definitions — easy to extend
-const COLUMNS = [
+const DEFAULT_COLUMNS = [
   { key: "deviceName", label: "Device name" },
-  { key: "password", label: "device password" },
-  { key: "oculasAuthId", label: "oculas auth id" },
+  { key: "password", label: "Device password" },
+  { key: "oculasAuthId", label: "Oculas auth id" },
   { key: "status", label: "Status" },
   { key: "action", label: "Action" },
 ];
 
-// Pass rows as a prop; defaults to empty for demo
-export default function Table({ rows = [] }) {
-  const [entries, setEntries] = useState(25);
+export default function Table({ rows = [], columns }) {
+  const [entries, setEntries] = useState(10);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
-  const filtered = rows.filter((row) =>
-    Object.values(row).some((val) =>
-      String(val).toLowerCase().includes(search.toLowerCase()),
-    ),
+  const COLUMNS = columns ?? DEFAULT_COLUMNS;
+
+  const filtered = useMemo(
+    () =>
+      rows.filter((row) =>
+        Object.values(row).some((val) =>
+          String(val).toLowerCase().includes(search.toLowerCase()),
+        ),
+      ),
+    [rows, search],
   );
 
-  const visible = filtered.slice(0, entries);
+  const totalEntries = filtered.length;
+  const totalPages =
+    entries === "All" ? 1 : Math.ceil(totalEntries / Number(entries));
+
+  const visible =
+    entries === "All"
+      ? filtered
+      : filtered.slice((page - 1) * entries, page * entries);
+
+  const handlePrev = () => setPage((p) => Math.max(p - 1, 1));
+  const handleNext = () => setPage((p) => Math.min(p + 1, totalPages));
+
+  const handleEntriesChange = (value) => {
+    setEntries(value);
+    setPage(1);
+  };
 
   return (
     <div className="table-card">
-      {/* Export button */}
-      <div className="table-card__toolbar">
-        <button className="export-btn">
-          <Icon d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          Export to XLS
-        </button>
-      </div>
-
-      {/* Controls */}
+      {/* Search */}
       <div className="table-card__controls">
-        {/* Show entries */}
-        <div className="show-entries">
-          <span className="show-entries__label">Show</span>
-          <select
-            className="show-entries__select"
-            value={entries}
-            onChange={(e) => setEntries(Number(e.target.value))}
-          >
-            {[10, 25, 50, 100].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-          <span className="show-entries__text">entries</span>
-        </div>
-
-        {/* Search */}
         <div className="search-box">
-          <span className="search-box__label">Search:</span>
+          <FiSearch className="search-box__icon" />
           <input
             className="search-box__input"
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder=""
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Search..."
           />
         </div>
       </div>
@@ -94,6 +73,7 @@ export default function Table({ rows = [] }) {
             ))}
           </tr>
         </thead>
+
         <tbody>
           {visible.length > 0 ? (
             visible.map((row, i) => (
@@ -106,7 +86,7 @@ export default function Table({ rows = [] }) {
           ) : (
             <tr>
               <td colSpan={COLUMNS.length} className="data-table__empty">
-                No data available in table
+                No data available
               </td>
             </tr>
           )}
@@ -115,19 +95,58 @@ export default function Table({ rows = [] }) {
 
       {/* Footer */}
       <div className="table-card__footer">
+        {/* Show entries */}
+        <div className="show-entries">
+          <span>Show</span>
+          <select
+            className="show-entries__select"
+            value={entries}
+            onChange={(e) => handleEntriesChange(e.target.value)}
+          >
+            {[10, 25, 50, 100, "All"].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+          <span>entries</span>
+        </div>
+
+        {/* Info */}
         <span className="table-card__info">
           {visible.length === 0
             ? "No entries found"
-            : `Showing 1 to ${visible.length} of ${filtered.length} entries`}
+            : `Showing ${entries === "All" ? 1 : (page - 1) * entries + 1} to ${
+                entries === "All"
+                  ? totalEntries
+                  : (page - 1) * entries + visible.length
+              } of ${totalEntries} entries`}
         </span>
-        <div className="pagination">
-          <button className="page-btn" disabled>
-            <Icon d="M15 19l-7-7 7-7" size={14} />
-          </button>
-          <button className="page-btn" disabled>
-            <Icon d="M9 5l7 7-7 7" size={14} />
-          </button>
-        </div>
+
+        {/* Pagination */}
+        {entries !== "All" && (
+          <div className="pagination">
+            <button
+              className="page-btn"
+              disabled={page === 1}
+              onClick={handlePrev}
+            >
+              <MdChevronLeft size={20} />
+            </button>
+
+            <span className="page-info">
+              {page} / {totalPages}
+            </span>
+
+            <button
+              className="page-btn"
+              disabled={page === totalPages}
+              onClick={handleNext}
+            >
+              <MdChevronRight size={20} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -9,7 +9,15 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <App />
-      <Toaster />
+      <Toaster
+        toastOptions={{
+          duration: 3000,
+          style: {
+            fontSize: "13px",
+            fontFamily: "'DM Sans', sans-serif",
+          },
+        }}
+      />
     </BrowserRouter>
   </StrictMode>,
 );

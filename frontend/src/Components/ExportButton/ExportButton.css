@@ -1,0 +1,19 @@
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: var(--export-bg);
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  font-size: 0.81rem;
+  font-weight: 600;
+  font-family: "Open Sans", sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.15s;
+}
+.export-btn:hover {
+  background: var(--export-hover);
+}

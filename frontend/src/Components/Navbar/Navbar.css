@@ -3,15 +3,17 @@
   top: 0;
   height: 98px;
   width: 100%;
-  /* background: radial-gradient(circle at top, #3a3270, #1b1438); */
-  /* border-bottom: 1px solid #2a2550; */
+  background: var(--navbar-bg);
+  border-bottom: 1px solid var(--navbar-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
   z-index: 900;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-  transition: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .navbar__left,
@@ -25,7 +27,7 @@
 .navbar__icon-btn {
   background: none;
   border: none;
-  color: #1c1d1e;
+  color: var(--navbar-icon-color);
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
@@ -37,7 +39,7 @@
 
 .navbar__hamburger:hover,
 .navbar__icon-btn:hover {
-  background: rgba(231, 62, 63, 0.12);
+  background: var(--navbar-icon-hover-bg);
   color: #e73e3f;
 }
 
@@ -46,8 +48,8 @@
   align-items: center;
   gap: 9px;
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  border: 1px solid var(--navbar-profile-border);
+  color: var(--navbar-username-color);
   cursor: pointer;
   padding: 6px 12px 6px 6px;
   border-radius: 22px;
@@ -55,7 +57,7 @@
 }
 
 .navbar__profile-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--navbar-profile-hover-bg);
   border-color: rgba(231, 62, 63, 0.4);
 }
 
@@ -74,14 +76,16 @@
 .navbar__username {
   font-size: 13px;
   font-weight: 500;
-  color: #232529;
+  color: var(--navbar-username-color);
   white-space: nowrap;
+  transition: color 0.3s ease;
 }
 
 .navbar__profile-wrap {
   position: relative;
 }
 
+/* Dropdown always stays dark — it's a floating overlay, not a content area */
 .navbar__dropdown {
   position: absolute;
   right: 0;

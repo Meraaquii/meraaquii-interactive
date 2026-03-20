@@ -3,11 +3,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Components/Login/Login";
 import SignUp from "./Components/SignUp/SignUp";
 import DashboardLayout from "./Components/Dashboardlayout/Dashboardlayout";
-import DeviceList from "./Components/Devicelist/Devicelist";
-import CustomerList from "./Components/Customerlist/Customerlist";
+import DeviceList from "./Components/DeviceList/DeviceList";
 import SalesmanList from "./Components/Salesmanlist/Salesmanlist";
-import ProjectFilter from "./Components/Projectfilter/Projectfilter";
+import ProjectFilter from "./Components/ProjectFilter/ProjectFilter";
 import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
+import ClientList from "./Components/ClientList/ClientList";
 
 export default function App() {
   return (
@@ -19,11 +19,11 @@ export default function App() {
       {/* ── Protected routes (any logged-in user) ─────────────────── */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="device-list" replace />} />
+          <Route index element={<Navigate to="salesman-list" replace />} />
           <Route path="device-list" element={<DeviceList />} />
-          <Route path="customer-list" element={<CustomerList />} />
           <Route path="salesman-list" element={<SalesmanList />} />
           <Route path="project-filter" element={<ProjectFilter />} />
+          <Route path="client-list" element={<ClientList />} />
         </Route>
       </Route>
 

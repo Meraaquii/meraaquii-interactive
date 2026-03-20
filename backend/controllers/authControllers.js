@@ -82,6 +82,8 @@ const login = async (req, res) => {
     }
 
     const match = await comparePassword(user_password, user.user_password);
+    //console.log("User password:", user.user_password);
+    console.log("Password match:", user);
 
     if (!match) {
       return res.status(401).json({

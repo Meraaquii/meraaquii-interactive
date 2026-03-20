@@ -1,21 +1,14 @@
-const bcrypt = require("bcrypt");
+const md5 = require("md5");
 
-/**
- * Hash user password
- * @param {string} password
- * @returns {Promise<string>}
- */
 const hashPassword = async (password) => {
   if (!password) {
     throw new Error("Password is required");
   }
 
   try {
-    const saltRounds = 10;
-    const hash = await bcrypt.hash(password, saltRounds);
+    const hash = md5(password);
 
-    // Debug check (remove in production)
-    console.log("Generated Hash:", hash);
+    console.log("Generated MD5 Hash:", hash);
     console.log("Hash Length:", hash.length);
 
     return hash;
@@ -25,12 +18,6 @@ const hashPassword = async (password) => {
   }
 };
 
-/**
- * Compare plain password with hashed password
- * @param {string} password
- * @param {string} hashedPassword
- * @returns {Promise<boolean>}
- */
 const comparePassword = async (password, hashedPassword) => {
   try {
     if (!password || !hashedPassword) {
@@ -38,13 +25,9 @@ const comparePassword = async (password, hashedPassword) => {
       return false;
     }
 
-    // bcrypt hashes must be 60 chars
-    if (hashedPassword.length !== 60) {
-      console.log("Invalid hash length:", hashedPassword.length);
-      return false;
-    }
+    const hashedInput = md5(password);
 
-    const match = await bcrypt.compare(password, hashedPassword);
+    const match = hashedInput === hashedPassword;
 
     console.log("Password Match:", match);
 

@@ -41,6 +41,7 @@ const Login = () => {
         toast.error(message);
       },
     );
+    console.log("Login attempt with:", authController);
   };
 
   return (
