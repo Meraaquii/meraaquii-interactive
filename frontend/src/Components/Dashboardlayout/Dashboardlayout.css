@@ -1,0 +1,41 @@
+.layout {
+  min-height: 100vh;
+  background: #f4f6f9;
+}
+
+.layout__inner {
+  display: flex;
+  min-height: 100vh;
+}
+
+.layout__right {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  margin-left: 80px;
+  transition:
+    margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 769px) {
+  /* Sidebar expanded hone par — same timing */
+  .layout__inner:has(.sidebar-expanded) .layout__right {
+    margin-left: 280px;
+  }
+}
+
+.layout__main {
+  flex: 1;
+  padding: 24px 28px;
+  background: #f4f6f9;
+  min-height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .layout__right {
+    margin-left: 0 !important;
+  }
+}

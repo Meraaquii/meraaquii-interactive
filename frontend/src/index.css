@@ -1,0 +1,56 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: "roboto", sans-serif;
+  font-size: 19px;
+}
+
+/* ── global.css ── */
+
+:root {
+  --navbar-bg: #ffffff;
+  --sidebar-bg: radial-gradient(circle at top, #3a3270, #1b1438);
+  --sidebar-hover: #1e4762;
+  --sidebar-active: #14303f;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --surface-hover: #f0f3f7;
+  --border: #dce3ea;
+  --text: #2c3e50;
+  --text-muted: #7f8c9a;
+  --accent: #2e7eb8;
+  --sidebar-text: #ffffff;
+  --sidebar-label: #7aa8c4;
+}
+
+body.dark {
+  --navbar-bg: #1c2a36;
+  --bg: #121e27;
+  --surface: #1c2a36;
+  --surface-hover: #243242;
+  --border: #2c3e50;
+  --text: #d5e8f5;
+  --text-muted: #6a8a9a;
+}
+
+/* App shell */
+
+body.dark .page-title {
+  background: #1e2e3a;
+}
+
+.page-title h2 {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
