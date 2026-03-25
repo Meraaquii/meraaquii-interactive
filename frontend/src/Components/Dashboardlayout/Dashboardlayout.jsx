@@ -4,6 +4,7 @@ import Navbar from "../Navbar/Navbar";
 import Sidebar from "../Sidebar/Sidebar";
 import usePreventDashboardExit from "../../hooks/usePreventDashboardExit";
 import "./DashboardLayout.css";
+import { useEffect } from "react";
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -19,11 +20,10 @@ export default function DashboardLayout() {
     });
   };
 
-  // Use refined hook
   usePreventDashboardExit(setShowLogoutPopup);
 
   const confirmLogout = () => {
-    localStorage.clear();
+    localStorage.clear(); // wipes token, user_id, user_type, user
     setShowLogoutPopup(false);
     navigate("/", { replace: true });
   };
@@ -31,6 +31,13 @@ export default function DashboardLayout() {
   const cancelLogout = () => {
     setShowLogoutPopup(false);
   };
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (!user) {
+      navigate("/", { replace: true });
+    }
+  }, []);
 
   return (
     <div className={`layout${darkMode ? " dark-theme" : ""}`}>
@@ -53,7 +60,6 @@ export default function DashboardLayout() {
         </div>
       </div>
 
-      {/* Logout Popup */}
       {showLogoutPopup && (
         <div className="logout-overlay">
           <div className="logout-modal">

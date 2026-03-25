@@ -8,6 +8,5 @@ const {
 
 router.get("/getClients", getClients);
 router.post("/client/salesman", getClientSalesman);
-router.get("/salesman", getSalesman);
-
+router.get("/salesman/:clientId", getSalesman);
 module.exports = router;

@@ -66,34 +66,27 @@ const login = async (req, res) => {
     const { user_email, user_password } = req.body;
 
     if (!user_email || !user_password) {
-      return res.status(400).json({
-        status: 0,
-        message: "Email and password required",
-      });
+      return res
+        .status(400)
+        .json({ status: 0, message: "Email and password required" });
     }
 
     const user = await userModel.findUserByEmail(user_email);
 
     if (!user) {
-      return res.status(401).json({
-        status: 0,
-        message: "Invalid email or password",
-      });
+      return res
+        .status(401)
+        .json({ status: 0, message: "Invalid email or password" });
     }
 
     const match = await comparePassword(user_password, user.user_password);
-    //console.log("User password:", user.user_password);
-    console.log("Password match:", user);
 
     if (!match) {
-      return res.status(401).json({
-        status: 0,
-        message: "Invalid email or password",
-      });
+      return res
+        .status(401)
+        .json({ status: 0, message: "Invalid email or password" });
     }
 
-    // Admin (user_type === 'A') can login directly without approval
-    // Client (C), Customer (Cu), Salesman (S) must be approved by admin first
     const isAdmin = user.user_type === "A";
 
     if (!isAdmin && user.user_status !== "A") {
@@ -105,17 +98,15 @@ const login = async (req, res) => {
 
     delete user.user_password;
 
-    res.json({
-      status: 1,
-      message: "Login successful",
-      user,
-    });
+    if (user.user_type === "C") {
+      const clientId = await userModel.findClientIdByEmail(user.user_email);
+      user.client_id = clientId;
+    }
+
+    res.json({ status: 1, message: "Login successful", user });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      status: 0,
-      message: "Server Error",
-    });
+    res.status(500).json({ status: 0, message: "Server Error" });
   }
 };
 

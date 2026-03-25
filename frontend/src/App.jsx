@@ -12,31 +12,31 @@ import ClientList from "./Components/ClientList/ClientList";
 export default function App() {
   return (
     <Routes>
-      {/* ── Public routes ─────────────────────────────────────────── */}
+      {/* ── Public routes ─────────────────────────────── */}
       <Route path="/" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
 
-      {/* ── Protected routes (any logged-in user) ─────────────────── */}
+      {/* ── Client dashboard ──────────────────────────── */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="salesman-list" replace />} />
+          <Route index element={<Navigate to="device-list" replace />} />
           <Route path="device-list" element={<DeviceList />} />
           <Route path="salesman-list" element={<SalesmanList />} />
+          <Route path="project-filter" element={<ProjectFilter />} />
+        </Route>
+      </Route>
+
+      {/* ── Admin dashboard ───────────────────────────── */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/admin/dashboard" element={<DashboardLayout />}>
+          <Route index element={<Navigate to="device-list" replace />} />
+          <Route path="device-list" element={<DeviceList />} />
           <Route path="project-filter" element={<ProjectFilter />} />
           <Route path="client-list" element={<ClientList />} />
         </Route>
       </Route>
 
-      {/* ── Admin-only routes (user_type === "A") ─────────────────── */}
-      {/* Uncomment when you add admin pages
-      <Route element={<ProtectedRoute role="A" />}>
-        <Route path="/admin/dashboard" element={<AdminLayout />}>
-          <Route index element={<AdminHome />} />
-        </Route>
-      </Route>
-      */}
-
-      {/* ── Catch-all ─────────────────────────────────────────────── */}
+      {/* ── Catch-all ─────────────────────────────────── */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

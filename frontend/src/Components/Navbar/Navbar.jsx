@@ -21,12 +21,10 @@ export default function Navbar({ onToggleSidebar, onToggleDark, darkMode }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  // Read user display name from controller (sourced from localStorage)
   const username = navbarController.getUserDisplayName();
 
   const wrapRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {

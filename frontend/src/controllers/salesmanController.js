@@ -1,8 +1,15 @@
 import { fetchSalesman } from "../services/salesmanService.js";
 
-export const getSalesmanData = async (setRows) => {
+export const getSalesmanData = async (setRows, clientId) => {
   try {
-    const data = await fetchSalesman();
+    const data = await fetchSalesman(clientId);
+
+    console.log("Salesman data:", data);
+
+    if (!Array.isArray(data)) {
+      console.error("Salesman API data is not an array!", data);
+      return;
+    }
 
     const formatted = data.map((item) => ({
       name: item.salesman_name,

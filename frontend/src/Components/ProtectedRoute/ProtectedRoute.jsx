@@ -1,10 +1,10 @@
 import { Navigate, Outlet } from "react-router-dom";
 
 export default function ProtectedRoute({ role }) {
-  const token = localStorage.getItem("token");
+  const user_id = localStorage.getItem("user_id"); // ✅ token → user_id
   const user_type = localStorage.getItem("user_type");
 
-  if (!token) {
+  if (!user_id) {
     return <Navigate to="/" replace />;
   }
 

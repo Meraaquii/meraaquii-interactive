@@ -40,17 +40,17 @@ const getClientSalesman = async (req, res) => {
 
 const getSalesman = async (req, res) => {
   try {
-    const salesmans = await getAllSalesman();
+    const clientId = req.params.clientId;
+
+    const data = await getSalesmanByClient(clientId);
 
     res.json({
       success: true,
-      data: salesmans,
+      data,
     });
   } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
+    console.error("Salesman error:", error);
+    res.status(500).json({ success: false });
   }
 };
 

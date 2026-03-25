@@ -18,9 +18,14 @@ export default function DeviceList() {
     console.log("Export clicked!");
   };
 
+  const user = JSON.parse(localStorage.getItem("user"));
+  const clientId = user?.user_id;
+
   useEffect(() => {
-    getDeviceData(setRows);
-  }, []);
+    if (clientId) {
+      getDeviceData(setRows, clientId);
+    }
+  }, [clientId]);
 
   return (
     <div className="device-list">

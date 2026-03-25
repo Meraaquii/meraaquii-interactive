@@ -6,6 +6,24 @@ import logo from "../../assets/Logo.png";
 import authController from "../../controllers/authController";
 import toast from "react-hot-toast";
 
+// ─── Map user_type codes → dashboard routes ──────────────────────────────────
+// Adjust the codes ("A", "C", "CU", "S") to whatever your backend actually returns.
+const USER_TYPE_ROUTES = {
+  A: "/admin/dashboard", // Admin
+  C: "/client/dashboard", // Client
+  CU: "/customer/dashboard", // Customer
+  S: "/salesman/dashboard", // Salesman
+};
+
+const getRouteForUserType = (userType) => {
+  const key = String(userType ?? "")
+    .trim()
+    .toUpperCase();
+  return USER_TYPE_ROUTES[key] ?? "/dashboard"; // fallback
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const Login = () => {
   const navigate = useNavigate();
 
@@ -20,28 +38,42 @@ const Login = () => {
     setError("");
     setLoading(true);
 
-    await authController.handleLogin(
-      email,
-      password,
-      (user) => {
-        setLoading(false);
-        localStorage.setItem("user", JSON.stringify(user));
-        localStorage.setItem("token", user.token);
-        localStorage.setItem("user_type", user.user_type);
-        toast.success("Login successful!");
-        if (user.user_type === "A") {
-          navigate("/admin/dashboard");
-        } else {
-          navigate("/dashboard");
-        }
-      },
-      (message) => {
-        setLoading(false);
-        setError(message);
-        toast.error(message);
-      },
-    );
-    console.log("Login attempt with:", authController);
+    try {
+      await authController.handleLogin(
+        email,
+        password,
+
+        // ── onSuccess ──────────────────────────────────────────────────────
+        (user) => {
+          setLoading(false);
+
+          // Persist auth data
+          const userData = { ...user, login_at: new Date().toISOString() };
+          localStorage.setItem("user", JSON.stringify(userData));
+          localStorage.setItem("user_type", user.user_type);
+          localStorage.setItem("token", user.token);
+          localStorage.setItem("user_id", user.user_id);
+
+          toast.success(`Welcome, ${user.user_name}!`);
+
+          // Route based on user type
+          const route = getRouteForUserType(user.user_type);
+          navigate(route, { replace: true });
+        },
+
+        // ── onError ───────────────────────────────────────────────────────
+        (message) => {
+          setLoading(false);
+          setError(message);
+          toast.error(message);
+        },
+      );
+    } catch (err) {
+      setLoading(false);
+      setError("An unexpected error occurred.");
+      toast.error("Login failed. Please try again.");
+      console.error("Login error:", err);
+    }
   };
 
   return (

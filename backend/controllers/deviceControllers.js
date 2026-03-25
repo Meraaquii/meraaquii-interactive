@@ -1,21 +1,16 @@
-const { getAlldevice } = require("../models/deviceModal");
+const { getAlldevice } = require("../models/deviceModel.js");
 
-const getDevice = async (req, res) => {
+const getDevicesByClient = async (req, res) => {
   try {
-    const devices = await getAlldevice();
+    const client_id = req.params.client_id;
 
-    res.json({
-      success: true,
-      data: devices,
-      meessage: "get device success",
-    });
+    const devices = await getAlldevice(client_id);
+
+    res.json(devices);
   } catch (error) {
     console.error(error);
-    res.json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
-module.exports = { getDevice };
+module.exports = { getDevicesByClient };

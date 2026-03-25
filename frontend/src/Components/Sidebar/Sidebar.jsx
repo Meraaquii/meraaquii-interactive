@@ -44,14 +44,10 @@ const Sidebar = ({ isVisible, onToggle }) => {
   const isItemActive = (path) => location.pathname === path;
   const isSubItemActive = (path) => location.pathname === path;
 
-  const menuItems = [
-    {
-      id: "salesman-list",
-      name: "Salesman List",
-      icon: <MdOutlinePerson className="nav-icons" />,
-      path: "/dashboard/salesman-list",
-      type: "link",
-    },
+  const userType = localStorage.getItem("user_type");
+
+  // Replace your static menuItems with this:
+  const adminMenuItems = [
     {
       id: "device-list",
       name: "Device List",
@@ -74,6 +70,32 @@ const Sidebar = ({ isVisible, onToggle }) => {
       type: "link",
     },
   ];
+
+  const clientMenuItems = [
+    {
+      id: "device-list",
+      name: "Device List",
+      icon: <LuLayoutList className="nav-icons" />,
+      path: "/dashboard/device-list",
+      type: "link",
+    },
+    {
+      id: "project-filter",
+      name: "Project Filter",
+      icon: <LuFilter className="nav-icons" />,
+      path: "/dashboard/project-filter",
+      type: "link",
+    },
+    {
+      id: "salesman-list",
+      name: "Salesman List",
+      icon: <MdOutlinePerson className="nav-icons" />,
+      path: "/dashboard/salesman-list",
+      type: "link",
+    },
+  ];
+
+  const menuItems = userType === "A" ? adminMenuItems : clientMenuItems;
 
   const sidebarClass = [
     "sidebar",

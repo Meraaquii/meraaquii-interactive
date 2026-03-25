@@ -9,6 +9,14 @@ const findUserByEmail = async (email) => {
   return rows[0];
 };
 
+const findClientIdByEmail = async (email) => {
+  const [rows] = await pool.query(
+    "SELECT client_id FROM mr_client WHERE client_email = ?",
+    [email],
+  );
+  return rows[0]?.client_id;
+};
+
 // Create new user
 const createUser = async (userData) => {
   const {
@@ -54,4 +62,5 @@ module.exports = {
   findUserByEmail,
   createUser,
   activateUser,
+  findClientIdByEmail,
 };

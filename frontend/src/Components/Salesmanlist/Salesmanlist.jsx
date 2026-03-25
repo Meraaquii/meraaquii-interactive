@@ -6,9 +6,9 @@ import { getSalesmanData } from "../../controllers/salesmanController";
 import "./SalesmanList.css";
 
 const SALESMAN_COLUMNS = [
-  { key: "name", label: "Salesman name" },
-  { key: "phone", label: "Salesman Phone No" },
-  { key: "email", label: "Salesman Email" },
+  { key: "name", label: "Name" },
+  { key: "phone", label: "Phone" },
+  { key: "email", label: "Email" },
   { key: "createdAt", label: "Created At" },
   { key: "action", label: "Action" },
 ];
@@ -19,10 +19,14 @@ export default function SalesmanList() {
   const handleExport = () => {
     console.log("Export clicked!");
   };
+  const user = JSON.parse(localStorage.getItem("user"));
+  const clientId = user?.client_id;
 
   useEffect(() => {
-    getSalesmanData(setRows);
-  }, []);
+    if (clientId) {
+      getSalesmanData(setRows, clientId);
+    }
+  }, [clientId]);
 
   return (
     <div className="salesman-list">

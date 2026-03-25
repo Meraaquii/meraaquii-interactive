@@ -9,7 +9,7 @@ const getClientUser = async () => {
 
 const getSalesmanByClient = async (clientId) => {
   const query = `
-    SELECT salesman_id, salesman_name, salesman_phone_no, salesman_email
+    SELECT salesman_id, salesman_name, salesman_phone_no, salesman_email, created_on
     FROM mr_salesman
     WHERE client_id = ?
   `;
