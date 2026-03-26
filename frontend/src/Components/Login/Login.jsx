@@ -6,6 +6,13 @@ import logo from "../../assets/Logo.png";
 import authController from "../../controllers/authController";
 import toast from "react-hot-toast";
 
+const ROLE_ROUTES = {
+  A: "/admin/dashboard",
+  C: "/dashboard",
+  CU: "/customer/dashboard",
+  S: "/salesman/dashboard",
+};
+
 const Login = () => {
   const navigate = useNavigate();
 
@@ -24,20 +31,45 @@ const Login = () => {
       await authController.handleLogin(
         email,
         password,
+
+        // onSuccess
         (user) => {
           setLoading(false);
 
-          const userData = { ...user, login_at: new Date().toISOString() };
-          localStorage.setItem("user", JSON.stringify(userData));
-          localStorage.setItem("user_type", user.user_type);
+          console.log("[Login] user object:", user);
+          console.log("[Login] user_type:", JSON.stringify(user.user_type));
+
+          // ── Store auth ───────────────────────────────────────────
+          // Use token as the auth guard (not user_id which may be undefined)
           localStorage.setItem("token", user.token);
-          localStorage.setItem("user_id", user.user_id);
+          localStorage.setItem("user_type", String(user.user_type).trim());
+          localStorage.setItem("user_id", user.user_id ?? user.id ?? "");
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              ...user,
+              login_at: new Date().toISOString(),
+            }),
+          );
 
           toast.success(`Welcome, ${user.user_name}!`);
 
-          const userType = String(user.user_type).trim().toUpperCase();
-          navigate(userType === "A" ? "/admin/dashboard" : "/dashboard");
+          // ── Navigate ─────────────────────────────────────────────
+          const userType = String(user.user_type).trim();
+          const route = ROLE_ROUTES[userType];
+
+          if (!route) {
+            console.error("[Login] Unknown user_type:", userType);
+            toast.error("Unknown account type. Contact support.");
+            setLoading(false);
+            return;
+          }
+
+          console.log("[Login] navigating to:", route);
+          navigate(route, { replace: true });
         },
+
+        // onError
         (message) => {
           setLoading(false);
           setError(message);
@@ -48,14 +80,13 @@ const Login = () => {
       setLoading(false);
       setError("An unexpected error occurred.");
       toast.error("Login failed. Please try again.");
-      console.error("Login error:", err);
+      console.error("[Login] error:", err);
     }
   };
 
   return (
     <div className="login-page">
       <div className="login-card">
-        {/* Logo */}
         <div className="logo-container">
           <img src={logo} alt="Logo" className="logo-img" />
         </div>

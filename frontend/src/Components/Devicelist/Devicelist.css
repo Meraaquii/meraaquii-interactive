@@ -22,3 +22,20 @@
   position: relative;
   left: 4px;
 }
+
+.edit-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #4361ee;
+  padding: 0;
+}
+
+.edit-btn:hover {
+  color: #172564;
+}

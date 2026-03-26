@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ExportButton from "../ExportButton/ExportButton";
 import Table from "../Table/Table";
+import adminService from "../../services/Adminservice";
 import "./ClientList.css";
 
 const CLIENTLIST_COLUMNS = [
@@ -13,24 +14,35 @@ const CLIENTLIST_COLUMNS = [
 
 export default function ClientList() {
   const [rows, setRows] = useState([]);
-  const handleExport = () => {
-    console.log("Export clicked!");
-  };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  //   useEffect(() => {
-  //     getDeviceData(setRows);
-  //   }, []);
+  useEffect(() => {
+    adminService
+      .getClients()
+      .then((data) => setRows(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="client-list">
-      {/* Page header */}
       <div className="client-list__header">
         <h2 className="client-list__title">Client List</h2>
-        <ExportButton onClick={handleExport} />
+        <ExportButton
+          data={rows}
+          columns={CLIENTLIST_COLUMNS}
+          filename="clients"
+        />
       </div>
 
-      {/* Table */}
-      <Table rows={rows} columns={CLIENTLIST_COLUMNS} />
+      {error && <p className="client-list__error">{error}</p>}
+
+      {loading ? (
+        <p className="client-list__loading">Loading clients…</p>
+      ) : (
+        <Table rows={rows} columns={CLIENTLIST_COLUMNS} />
+      )}
     </div>
   );
 }

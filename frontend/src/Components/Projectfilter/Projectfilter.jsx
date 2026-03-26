@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
-import Table from "../Table/Table";
-import "./ProjectFilter.css";
 import { IoMdArrowDropdown } from "react-icons/io";
+import Table from "../Table/Table";
 import ExportButton from "../ExportButton/ExportButton";
 import projectService from "../../services/projectService";
+import adminService from "../../services/Adminservice";
+import "./ProjectFilter.css";
 
-const PROJECTFILTER_COLUMNS = [
+const ADMIN_COLUMNS = [
+  { key: "project_name", label: "Project Name" },
+  { key: "client_name", label: "Client Name" },
+  { key: "status", label: "Status" },
+  { key: "created_at", label: "Created At" },
+  { key: "action", label: "Action" },
+];
+
+const CLIENT_COLUMNS = [
   { key: "project_name", label: "Project Name" },
   { key: "tower_name", label: "Tower Name" },
   { key: "floor_name", label: "Floor Name" },
@@ -13,6 +22,16 @@ const PROJECTFILTER_COLUMNS = [
   { key: "apartment_status", label: "Availability" },
   { key: "action", label: "Action" },
 ];
+
+function normalizeAdminProject(p) {
+  return {
+    project_name: p.project_name ?? p.projectName ?? "—",
+    client_name: p.client_name ?? p.clientName ?? p.client ?? "—",
+    status: p.status ?? p.project_status ?? "—",
+    created_at: p.created_at ?? p.createdAt ?? "—",
+    action: p.action ?? "",
+  };
+}
 
 export default function ProjectFilter() {
   const [filters, setFilters] = useState({
@@ -24,36 +43,40 @@ export default function ProjectFilter() {
 
   const [projects, setProjects] = useState([]);
   const [tableRows, setTableRows] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const userType = localStorage.getItem("user_type");
+  const isAdmin = userType === "A";
+
   useEffect(() => {
-    const fetchProjects = async () => {
+    const load = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const storedUser = localStorage.getItem("user");
-        if (!storedUser) {
-          setError("User not logged in.");
-          return;
+        let list = [];
+
+        if (isAdmin) {
+          const raw = await adminService.getProjects();
+          list = Array.isArray(raw) ? raw.map(normalizeAdminProject) : [];
+        } else {
+          const storedUser = localStorage.getItem("user");
+          if (!storedUser) throw new Error("User not logged in.");
+
+          const user = JSON.parse(storedUser);
+          if (!user.user_email || !user.user_type)
+            throw new Error("Invalid session. Please log in again.");
+
+          const data = await projectService.getProjects(
+            user.user_email,
+            user.user_type,
+          );
+          list = data.success && Array.isArray(data.data) ? data.data : [];
         }
 
-        const user = JSON.parse(storedUser);
-        const user_email = user.user_email;
-        const user_type = user.user_type;
-
-        if (!user_email || !user_type) {
-          setError("Invalid session. Please log in again.");
-          return;
-        }
-
-        const data = await projectService.getProjects(user_email, user_type);
-        const projectList =
-          data.success && Array.isArray(data.data) ? data.data : [];
-
-        setProjects(projectList);
-        setTableRows(projectList);
+        setProjects(list);
+        setTableRows(list);
       } catch (err) {
         setError(err.message || "Failed to fetch projects.");
       } finally {
@@ -61,17 +84,20 @@ export default function ProjectFilter() {
       }
     };
 
-    fetchProjects();
-  }, []);
+    load();
+  }, [isAdmin]);
 
-  // --- Derived dropdown options based on cascading selection ---
+  const adminProjectOptions = [
+    ...new Set(
+      projects
+        .map((p) => p.project_name)
+        .filter((v) => v !== "—" && Boolean(v)),
+    ),
+  ];
 
-  // Unique project names
   const projectOptions = [
     ...new Set(projects.map((p) => p.project_name).filter(Boolean)),
   ];
-
-  // Towers filtered by selected project
   const towerOptions = [
     ...new Set(
       projects
@@ -80,8 +106,6 @@ export default function ProjectFilter() {
         .filter(Boolean),
     ),
   ];
-
-  // Floors filtered by selected project + tower
   const floorOptions = [
     ...new Set(
       projects
@@ -94,8 +118,6 @@ export default function ProjectFilter() {
         .filter(Boolean),
     ),
   ];
-
-  // Apartments filtered by selected project + tower + floor
   const apartmentOptions = [
     ...new Set(
       projects
@@ -110,36 +132,32 @@ export default function ProjectFilter() {
     ),
   ];
 
-  // --- Filter table rows based on all selections ---
   useEffect(() => {
     let filtered = [...projects];
 
-    if (filters.project) {
-      filtered = filtered.filter((row) => row.project_name === filters.project);
-    }
-    if (filters.tower) {
-      filtered = filtered.filter((row) => row.tower_name === filters.tower);
-    }
-    if (filters.floor) {
-      filtered = filtered.filter((row) => row.floor_name === filters.floor);
-    }
-    if (filters.apartment) {
-      filtered = filtered.filter(
-        (row) => row.apartment_name === filters.apartment,
-      );
+    if (isAdmin) {
+      if (filters.project)
+        filtered = filtered.filter((r) => r.project_name === filters.project);
+    } else {
+      if (filters.project)
+        filtered = filtered.filter((r) => r.project_name === filters.project);
+      if (filters.tower)
+        filtered = filtered.filter((r) => r.tower_name === filters.tower);
+      if (filters.floor)
+        filtered = filtered.filter((r) => r.floor_name === filters.floor);
+      if (filters.apartment)
+        filtered = filtered.filter(
+          (r) => r.apartment_name === filters.apartment,
+        );
     }
 
     setTableRows(filtered);
-  }, [filters, projects]);
+  }, [filters, projects, isAdmin]);
 
-  // Reset downstream filters when a parent changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFilters((prev) => {
       const updated = { ...prev, [name]: value };
-
-      // Clear downstream selections on parent change
       if (name === "project") {
         updated.tower = "";
         updated.floor = "";
@@ -150,7 +168,6 @@ export default function ProjectFilter() {
       } else if (name === "floor") {
         updated.apartment = "";
       }
-
       return updated;
     });
   };
@@ -187,45 +204,64 @@ export default function ProjectFilter() {
     <div className="project-filter">
       <div className="project-list__header">
         <h2 className="project-list__title">Project Filter List</h2>
-        <ExportButton onClick={() => console.log("Export clicked!")} />
+        <ExportButton
+          data={tableRows}
+          columns={isAdmin ? ADMIN_COLUMNS : CLIENT_COLUMNS}
+          filename="projects"
+        />
       </div>
 
       {error && <p className="project-filter__error">{error}</p>}
 
       <div className="project-filter__fields">
-        <SelectField
-          id="project"
-          label="Project"
-          value={filters.project}
-          options={projectOptions}
-        />
-        <SelectField
-          id="tower"
-          label="Tower"
-          value={filters.tower}
-          options={filters.project ? towerOptions : []}
-          disabled={!filters.project}
-        />
-        <SelectField
-          id="floor"
-          label="Floor"
-          value={filters.floor}
-          options={filters.tower ? floorOptions : []}
-          disabled={!filters.tower}
-        />
-        <SelectField
-          id="apartment"
-          label="Apartment"
-          value={filters.apartment}
-          options={filters.floor ? apartmentOptions : []}
-          disabled={!filters.floor}
-        />
+        {isAdmin ? (
+          // Admin: single "Filter by Project" dropdown
+          <SelectField
+            id="project"
+            label="Project"
+            value={filters.project}
+            options={adminProjectOptions}
+          />
+        ) : (
+          <>
+            <SelectField
+              id="project"
+              label="Project"
+              value={filters.project}
+              options={projectOptions}
+            />
+            <SelectField
+              id="tower"
+              label="Tower"
+              value={filters.tower}
+              options={filters.project ? towerOptions : []}
+              disabled={!filters.project}
+            />
+            <SelectField
+              id="floor"
+              label="Floor"
+              value={filters.floor}
+              options={filters.tower ? floorOptions : []}
+              disabled={!filters.tower}
+            />
+            <SelectField
+              id="apartment"
+              label="Apartment"
+              value={filters.apartment}
+              options={filters.floor ? apartmentOptions : []}
+              disabled={!filters.floor}
+            />
+          </>
+        )}
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <p>Loading…</p>
       ) : (
-        <Table rows={tableRows} columns={PROJECTFILTER_COLUMNS} />
+        <Table
+          rows={tableRows}
+          columns={isAdmin ? ADMIN_COLUMNS : CLIENT_COLUMNS}
+        />
       )}
     </div>
   );

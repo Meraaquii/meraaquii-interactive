@@ -4,7 +4,6 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 18px;
-  /* background-color: #eef2f5; */
   padding: 10px 20px;
 }
 
@@ -39,4 +38,37 @@
 
 .salesman-list__add-btn:hover {
   background: var(--export-hover);
+}
+
+/* ── Action icons ── */
+.salesman-action-icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+}
+
+.salesman-list .salesman-action-icons td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.salesman-edit-icon {
+  color: #4361ee;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.salesman-edit-icon:hover {
+  color: #152981;
+}
+
+.salesman-delete-icon {
+  color: rgb(233, 11, 11);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.salesman-delete-icon:hover {
+  color: rgb(143, 12, 12);
 }

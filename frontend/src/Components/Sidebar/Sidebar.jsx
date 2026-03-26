@@ -8,6 +8,91 @@ import meraaquii from "../../assets/Logo.png";
 import smallLogo from "../../../public/fav-icon.jpg";
 import "./Sidebar.css";
 
+const MENU_CONFIG = {
+  A: [
+    {
+      id: "device-list",
+      name: "Device List",
+      icon: <LuLayoutList className="nav-icons" />,
+      path: "/admin/dashboard/device-list",
+      type: "link",
+    },
+    {
+      id: "project-list",
+      name: "Project List",
+      icon: <LuFilter className="nav-icons" />,
+      path: "/admin/dashboard/project-list",
+      type: "link",
+    },
+    {
+      id: "client-list",
+      name: "Client List",
+      icon: <MdOutlinePerson className="nav-icons" />,
+      path: "/admin/dashboard/client-list",
+      type: "link",
+    },
+  ],
+
+  C: [
+    {
+      id: "device-list",
+      name: "Device List",
+      icon: <LuLayoutList className="nav-icons" />,
+      path: "/dashboard/device-list",
+      type: "link",
+    },
+    {
+      id: "project-filter",
+      name: "Project Filter",
+      icon: <LuFilter className="nav-icons" />,
+      path: "/dashboard/project-filter",
+      type: "link",
+    },
+    {
+      id: "salesman-list",
+      name: "Salesman List",
+      icon: <MdOutlinePerson className="nav-icons" />,
+      path: "/dashboard/salesman-list",
+      type: "link",
+    },
+  ],
+
+  CU: [
+    {
+      id: "device-list",
+      name: "Device List",
+      icon: <LuLayoutList className="nav-icons" />,
+      path: "/customer/dashboard/device-list",
+      type: "link",
+    },
+    {
+      id: "project-filter",
+      name: "Project Filter",
+      icon: <LuFilter className="nav-icons" />,
+      path: "/customer/dashboard/project-filter",
+      type: "link",
+    },
+  ],
+
+  // Salesman → /salesman/dashboard/*
+  S: [
+    {
+      id: "salesman-list",
+      name: "Salesman List",
+      icon: <MdOutlinePerson className="nav-icons" />,
+      path: "/salesman/dashboard/salesman-list",
+      type: "link",
+    },
+    {
+      id: "project-filter",
+      name: "Project Filter",
+      icon: <LuFilter className="nav-icons" />,
+      path: "/salesman/dashboard/project-filter",
+      type: "link",
+    },
+  ],
+};
+
 const Sidebar = ({ isVisible, onToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,65 +122,12 @@ const Sidebar = ({ isVisible, onToggle }) => {
     }
   };
 
-  const handleSubItemClick = (subItemPath) => {
-    handleNavigation(subItemPath);
-  };
-
   const isItemActive = (path) => location.pathname === path;
   const isSubItemActive = (path) => location.pathname === path;
 
-  const userType = localStorage.getItem("user_type");
-
-  // Replace your static menuItems with this:
-  const adminMenuItems = [
-    {
-      id: "device-list",
-      name: "Device List",
-      icon: <LuLayoutList className="nav-icons" />,
-      path: "/dashboard/device-list",
-      type: "link",
-    },
-    {
-      id: "project-filter",
-      name: "Project Filter",
-      icon: <LuFilter className="nav-icons" />,
-      path: "/dashboard/project-filter",
-      type: "link",
-    },
-    {
-      id: "client-list",
-      name: "Client List",
-      icon: <MdOutlinePerson className="nav-icons" />,
-      path: "/dashboard/client-list",
-      type: "link",
-    },
-  ];
-
-  const clientMenuItems = [
-    {
-      id: "device-list",
-      name: "Device List",
-      icon: <LuLayoutList className="nav-icons" />,
-      path: "/dashboard/device-list",
-      type: "link",
-    },
-    {
-      id: "project-filter",
-      name: "Project Filter",
-      icon: <LuFilter className="nav-icons" />,
-      path: "/dashboard/project-filter",
-      type: "link",
-    },
-    {
-      id: "salesman-list",
-      name: "Salesman List",
-      icon: <MdOutlinePerson className="nav-icons" />,
-      path: "/dashboard/salesman-list",
-      type: "link",
-    },
-  ];
-
-  const menuItems = userType === "A" ? adminMenuItems : clientMenuItems;
+  // Pick menu for the logged-in user type; fall back to client menu
+  const userType = localStorage.getItem("user_type") ?? "C";
+  const menuItems = MENU_CONFIG[userType] ?? MENU_CONFIG["C"];
 
   const sidebarClass = [
     "sidebar",
@@ -132,6 +164,7 @@ const Sidebar = ({ isVisible, onToggle }) => {
                 style={{ "--item-index": index }}
               >
                 {item.type === "link" ? (
+                  /* ── Simple nav link ── */
                   <div
                     className={`menu-item ${
                       isItemActive(item.path) ? "menu-item-active" : ""
@@ -145,12 +178,12 @@ const Sidebar = ({ isVisible, onToggle }) => {
                       {item.icon}
                       <span className="menu-text">{item.name}</span>
                     </div>
-
                     {isItemActive(item.path) && (
                       <div className="active-indicator" />
                     )}
                   </div>
                 ) : (
+                  /* ── Expandable section ── */
                   <>
                     <div
                       className={`menu-item ${
@@ -165,6 +198,7 @@ const Sidebar = ({ isVisible, onToggle }) => {
                         {item.icon}
                         <span className="menu-text">{item.name}</span>
                       </div>
+
                       <div className="table-card__toolbar">
                         <button className="export-btn" title="Export">
                           <LuDownload size={15} />
@@ -175,7 +209,6 @@ const Sidebar = ({ isVisible, onToggle }) => {
                         {isItemActive(item.path) && (
                           <div className="active-indicator" />
                         )}
-
                         <RiArrowDropDownLine
                           className={`dropdown-arrow ${
                             activeSection === item.id ? "rotated" : ""
@@ -200,7 +233,7 @@ const Sidebar = ({ isVisible, onToggle }) => {
                               : ""
                           }`}
                           style={{ "--sub-index": subIndex }}
-                          onClick={() => handleSubItemClick(subItem.path)}
+                          onClick={() => handleNavigation(subItem.path)}
                         >
                           <MdChevronRight className="submenu-arrow" />
                           <span className="submenu-text">{subItem.name}</span>

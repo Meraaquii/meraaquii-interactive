@@ -7,6 +7,7 @@ const clientRoutes = require("./routes/clientRoutes.js");
 const deviceRoutes = require("./routes/deviceRoute.js");
 const projectRoutes = require("./routes/projectRoutes.js");
 const adminRoutes = require("./routes/adminRoutes.js");
+const salesmanRoutes = require("./routes/salesmanRoutes.js");
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use("/v1/api/clients", clientRoutes);
 app.use("/v1/api/device", deviceRoutes);
 app.use("/v1/api/project", projectRoutes);
 app.use("/v1/api/admin", adminRoutes);
+app.use("/v1/api/salesman", salesmanRoutes);
 
 const PORT = 5500;
 app.listen(PORT, () => {

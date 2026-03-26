@@ -1,0 +1,249 @@
+/* Overlay */
+.udm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  padding: 16px;
+}
+
+/* Modal */
+.udm-modal {
+  position: relative;
+  background: #ffffff;
+  /* height: 60%; */
+  width: 900px;
+  max-width: 95%;
+
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3);
+  animation: udmScaleIn 0.3s ease;
+}
+
+/* Animation */
+@keyframes udmScaleIn {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Header */
+.udm-header {
+  position: relative;
+  background: radial-gradient(circle at top, #3a3270, #1b1438);
+  color: white;
+  padding: 24px 28px;
+}
+
+.udm-header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.udm-header p {
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+/* Close Button FIXED */
+.udm-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.udm-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+  /* transform: rotate(90deg) scale(1.05); */
+}
+
+/* Form */
+.udm-form {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Grid */
+.udm-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Form Group */
+.udm-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Label */
+.udm-form-group label {
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* Inputs */
+.udm-form-group input,
+.udm-form-group select {
+  padding: 13px 14px;
+  border-radius: 10px;
+  border: 1px solid #dbeafe;
+  font-size: 15px;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+/* Focus */
+.udm-form-group input:focus,
+.udm-form-group select:focus {
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  outline: none;
+}
+
+/* Buttons */
+.udm-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Primary */
+.udm-btn-primary {
+  background: linear-gradient(135deg, #6366f1, #4338ca);
+  color: white;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.udm-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(67, 56, 202, 0.35);
+}
+
+/* Secondary */
+.udm-btn-secondary {
+  background: #f1f5f9;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.udm-btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+/* Add these to your existing UpdateDeviceModal.css */
+
+.udm-form-group--full {
+  grid-column: 1 / -1;
+}
+
+.udm-project-count {
+  font-size: 12px;
+  color: #888;
+  font-weight: normal;
+}
+
+.udm-project-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.udm-project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.udm-project-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px 4px 12px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #3730a3;
+  font-weight: 500;
+}
+
+.udm-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #6366f1;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.udm-tag-remove:hover {
+  background: #c7d2fe;
+  color: #1e1b4b;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .udm-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Optional: 3-column on large screen */
+@media (min-width: 1100px) {
+  .udm-form-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}

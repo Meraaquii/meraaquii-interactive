@@ -11,7 +11,8 @@ const DEFAULT_COLUMNS = [
   { key: "action", label: "Action" },
 ];
 
-export default function Table({ rows = [], columns }) {
+export default function Table({ rows = [], columns, onEdit, onDelete }) {
+  // ✅ added onEdit, onDelete
   const [entries, setEntries] = useState(10);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -79,7 +80,11 @@ export default function Table({ rows = [], columns }) {
             visible.map((row, i) => (
               <tr key={i}>
                 {COLUMNS.map((col) => (
-                  <td key={col.key}>{row[col.key] ?? "—"}</td>
+                  <td key={col.key}>
+                    {col.render
+                      ? col.render(row, onEdit, onDelete) // ✅ pass onEdit, onDelete
+                      : (row[col.key] ?? "—")}
+                  </td>
                 ))}
               </tr>
             ))

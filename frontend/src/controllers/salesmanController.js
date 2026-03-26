@@ -1,4 +1,4 @@
-import { fetchSalesman } from "../services/salesmanService.js";
+import { fetchSalesman, deleteSalesman } from "../services/salesmanService";
 
 export const getSalesmanData = async (setRows, clientId) => {
   try {
@@ -6,21 +6,23 @@ export const getSalesmanData = async (setRows, clientId) => {
 
     console.log("Salesman data:", data);
 
-    if (!Array.isArray(data)) {
-      console.error("Salesman API data is not an array!", data);
-      return;
-    }
+    if (!Array.isArray(data)) return;
 
     const formatted = data.map((item) => ({
+      id: item.salesman_id, // ✅ required for edit & delete
       name: item.salesman_name,
       phone: item.salesman_phone_no,
       email: item.salesman_email,
       createdAt: item.created_on,
-      action: "Edit",
     }));
 
     setRows(formatted);
   } catch (error) {
     console.error("Salesman fetch error:", error);
   }
+};
+
+// ✅ new
+export const deleteSalesmanData = async (id) => {
+  return await deleteSalesman(id);
 };
