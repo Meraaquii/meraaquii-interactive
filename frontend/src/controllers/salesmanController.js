@@ -9,7 +9,7 @@ export const getSalesmanData = async (setRows, clientId) => {
     if (!Array.isArray(data)) return;
 
     const formatted = data.map((item) => ({
-      id: item.salesman_id, // ✅ required for edit & delete
+      id: item.salesman_id,
       name: item.salesman_name,
       phone: item.salesman_phone_no,
       email: item.salesman_email,
@@ -22,7 +22,6 @@ export const getSalesmanData = async (setRows, clientId) => {
   }
 };
 
-// ✅ new
 export const deleteSalesmanData = async (id) => {
   return await deleteSalesman(id);
 };

@@ -12,7 +12,6 @@ const DEFAULT_COLUMNS = [
 ];
 
 export default function Table({ rows = [], columns, onEdit, onDelete }) {
-  // ✅ added onEdit, onDelete
   const [entries, setEntries] = useState(10);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -48,7 +47,6 @@ export default function Table({ rows = [], columns, onEdit, onDelete }) {
 
   return (
     <div className="table-card">
-      {/* Search */}
       <div className="table-card__controls">
         <div className="search-box">
           <FiSearch className="search-box__icon" />
@@ -65,40 +63,58 @@ export default function Table({ rows = [], columns, onEdit, onDelete }) {
         </div>
       </div>
 
-      {/* Table */}
-      <table className="data-table">
-        <thead>
-          <tr>
+      <div className="table-scroll-wrapper">
+        <table className="data-table">
+          <colgroup>
             {COLUMNS.map((col) => (
-              <th key={col.key}>{col.label}</th>
+              <col
+                key={col.key}
+                style={{
+                  width: col.width
+                    ? col.width
+                    : col.key === "action"
+                      ? "280px"
+                      : "auto",
+                }}
+              />
             ))}
-          </tr>
-        </thead>
+          </colgroup>
 
-        <tbody>
-          {visible.length > 0 ? (
-            visible.map((row, i) => (
-              <tr key={i}>
-                {COLUMNS.map((col) => (
-                  <td key={col.key}>
-                    {col.render
-                      ? col.render(row, onEdit, onDelete) // ✅ pass onEdit, onDelete
-                      : (row[col.key] ?? "—")}
-                  </td>
-                ))}
-              </tr>
-            ))
-          ) : (
+          <thead>
             <tr>
-              <td colSpan={COLUMNS.length} className="data-table__empty">
-                No data available
-              </td>
+              {COLUMNS.map((col) => (
+                <th key={col.key}>{col.label}</th>
+              ))}
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
 
-      {/* Footer */}
+          <tbody>
+            {visible.length > 0 ? (
+              visible.map((row, i) => (
+                <tr key={i} className={row.rowClassName || ""}>
+                  {COLUMNS.map((col) => (
+                    <td
+                      key={col.key}
+                      className={col.key === "action" ? "td-action" : ""}
+                    >
+                      {col.render
+                        ? col.render(row, onEdit, onDelete)
+                        : (row[col.key] ?? "—")}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={COLUMNS.length} className="data-table__empty">
+                  No data available
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
       <div className="table-card__footer">
         {/* Show entries */}
         <div className="show-entries">
@@ -138,11 +154,9 @@ export default function Table({ rows = [], columns, onEdit, onDelete }) {
             >
               <MdChevronLeft size={20} />
             </button>
-
             <span className="page-info">
               {page} / {totalPages}
             </span>
-
             <button
               className="page-btn"
               disabled={page === totalPages}

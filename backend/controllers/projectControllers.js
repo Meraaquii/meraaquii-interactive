@@ -1,6 +1,7 @@
 const {
   getAllProjects,
   getProjectById: getProjectByIdModel,
+  updateApartmentStatusModel,
 } = require("../models/projectModel.js");
 
 const getProjects = async (req, res) => {
@@ -57,4 +58,24 @@ const getProjectById = async (req, res) => {
   }
 };
 
-module.exports = { getProjects, getProjectById };
+const updateApartmentStatus = async (req, res) => {
+  const { apartment_id, status } = req.body;
+
+  if (apartment_id === undefined || status === undefined) {
+    return res
+      .status(400)
+      .json({ message: "apartment_id and status are required" });
+  }
+
+  const result = await updateApartmentStatusModel(apartment_id, status);
+
+  if (result.affectedRows === 0) {
+    return res
+      .status(404)
+      .json({ message: "Apartment not found or status unchanged" });
+  }
+
+  res.json({ message: "Status updated successfully" });
+};
+
+module.exports = { getProjects, getProjectById, updateApartmentStatus };

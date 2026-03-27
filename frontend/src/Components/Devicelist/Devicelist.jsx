@@ -39,6 +39,17 @@ export default function DeviceList() {
     setIsModalOpen(true);
   }, []);
 
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "A":
+        return "Active";
+      case "I":
+        return "Inactive";
+      default:
+        return "—";
+    }
+  };
+
   const normalizeDevice = useCallback(
     (rawDevice) => ({
       deviceName: rawDevice.device_name ?? rawDevice.deviceName ?? "—",
@@ -46,7 +57,9 @@ export default function DeviceList() {
         rawDevice.device_password ?? rawDevice.devicePassword ?? "—",
       deviceOculasAuthId:
         rawDevice.oculas_auth_id ?? rawDevice.deviceOculasAuthId ?? "—",
-      deviceStatus: rawDevice.device_status ?? rawDevice.deviceStatus ?? "—",
+      deviceStatus: getStatusLabel(
+        rawDevice.device_status ?? rawDevice.deviceStatus,
+      ),
       action: (
         <button
           className="edit-btn"
