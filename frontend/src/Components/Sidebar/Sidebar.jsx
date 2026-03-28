@@ -74,22 +74,21 @@ const MENU_CONFIG = {
     },
   ],
 
-  // Salesman → /salesman/dashboard/*
   S: [
     {
-      id: "salesman-list",
-      name: "Salesman List",
+      id: "customer-list",
+      name: "Customer List",
       icon: <MdOutlinePerson className="nav-icons" />,
-      path: "/salesman/dashboard/salesman-list",
+      path: "/salesman/dashboard/customer-list",
       type: "link",
     },
-    {
-      id: "project-filter",
-      name: "Project Filter",
-      icon: <LuFilter className="nav-icons" />,
-      path: "/salesman/dashboard/project-filter",
-      type: "link",
-    },
+    // {
+    //   id: "project-filter",
+    //   name: "Project Filter",
+    //   icon: <LuFilter className="nav-icons" />,
+    //   path: "/salesman/dashboard/project-filter",
+    //   type: "link",
+    // },
   ],
 };
 
@@ -99,11 +98,16 @@ const Sidebar = ({ isVisible, onToggle }) => {
 
   const [activeSection, setActiveSection] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+  // Track mobile breakpoint
   useEffect(() => {
-    setIsExpanded(isVisible);
-  }, [isVisible]);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const toggleSection = (section) => {
     setActiveSection((prev) => (prev === section ? null : section));
@@ -111,7 +115,8 @@ const Sidebar = ({ isVisible, onToggle }) => {
 
   const handleNavigation = (path) => {
     navigate(path);
-    if (window.innerWidth <= 768) onToggle();
+    // Close sidebar on mobile after navigation
+    if (isMobile) onToggle();
   };
 
   const handleItemClick = (item) => {
@@ -125,21 +130,28 @@ const Sidebar = ({ isVisible, onToggle }) => {
   const isItemActive = (path) => location.pathname === path;
   const isSubItemActive = (path) => location.pathname === path;
 
-  // Pick menu for the logged-in user type; fall back to client menu
   const userType = localStorage.getItem("user_type") ?? "C";
   const menuItems = MENU_CONFIG[userType] ?? MENU_CONFIG["C"];
 
   const sidebarClass = [
     "sidebar",
-    isExpanded ? "sidebar-expanded" : "sidebar-collapsed",
-    "sidebar-visible",
+    isMobile
+      ? isVisible
+        ? "sidebar-mobile-open"
+        : ""
+      : isVisible
+        ? "sidebar-expanded"
+        : "sidebar-collapsed",
   ]
-    .join(" ")
-    .trim();
+    .filter(Boolean)
+    .join(" ");
+
+  const isExpanded = isMobile ? true : isVisible;
 
   return (
     <>
-      {isVisible && window.innerWidth <= 768 && (
+      {/* Overlay — mobile only, shown when sidebar is open */}
+      {isMobile && isVisible && (
         <div className="sidebar-overlay" onClick={onToggle} />
       )}
 
@@ -153,6 +165,11 @@ const Sidebar = ({ isVisible, onToggle }) => {
                 <img src={smallLogo} alt="Meraaquii" />
               </div>
             </div>
+
+            {/* Close button — mobile only */}
+            <button className="close-button" onClick={onToggle}>
+              ✕
+            </button>
           </div>
 
           {/* Menu */}
@@ -164,7 +181,6 @@ const Sidebar = ({ isVisible, onToggle }) => {
                 style={{ "--item-index": index }}
               >
                 {item.type === "link" ? (
-                  /* ── Simple nav link ── */
                   <div
                     className={`menu-item ${
                       isItemActive(item.path) ? "menu-item-active" : ""
@@ -183,7 +199,6 @@ const Sidebar = ({ isVisible, onToggle }) => {
                     )}
                   </div>
                 ) : (
-                  /* ── Expandable section ── */
                   <>
                     <div
                       className={`menu-item ${

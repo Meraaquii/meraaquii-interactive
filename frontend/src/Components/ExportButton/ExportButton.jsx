@@ -1,10 +1,11 @@
 import { LuDownload } from "react-icons/lu";
 import { saveAs } from "file-saver";
 import "./ExportButton.css";
+import toast from "react-hot-toast";
 
 export default function ExportButton({ data, columns, filename = "export" }) {
   const handleDownload = () => {
-    if (!data?.length) return alert("No data to export");
+    if (!data?.length) return toast.error("No data to export");
 
     let html = `<table border="1" style="border-collapse: collapse;">`;
     html += "<thead><tr>";

@@ -1,34 +1,28 @@
+/* Page wrapper */
 .signup-wrapper {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(
-    ellipse at top,
-    #3a3270 0%,
-    #1b1438 60%,
-    #120e2e 100%
-  );
-
-  padding: 43px 0;
+  background: radial-gradient(ellipse at top, #1f1e1c, #4d4c48);
+  padding: 40px 16px;
+  box-sizing: border-box;
 }
 
-/* =====================
-   Card Container
-   ===================== */
+/* Card*/
 .signup-card {
-  width: 30%;
+  width: 100%;
+  max-width: 640px;
   padding: 36px 44px 32px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid white;
   color: white;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
 }
 
-/* =====================
-   Logo
-   ===================== */
+/*Logo*/
 .logo-wrap {
   text-align: center;
   margin-bottom: 14px;
@@ -36,12 +30,11 @@
 
 .logo-img {
   width: 160px;
-  /* filter: brightness(0) invert(1); */
+  max-width: 100%;
+  height: auto;
 }
 
-/* =====================
-   Page Title
-   ===================== */
+/*  Title*/
 .page-title {
   font-size: 22px;
   font-weight: 700;
@@ -49,9 +42,28 @@
   margin-bottom: 22px;
 }
 
-/* =====================
-   Form Layout
-   ===================== */
+/*Error / success banners*/
+.error-banner {
+  background: rgba(200, 0, 62, 0.15);
+  border: 1px solid rgba(200, 0, 62, 0.4);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #ff8a9a;
+  margin-bottom: 16px;
+}
+
+.success-banner {
+  background: rgba(0, 180, 120, 0.15);
+  border: 1px solid rgba(0, 180, 120, 0.4);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #6effd0;
+  margin-bottom: 16px;
+}
+
+/* Form layout  */
 .signup-form {
   display: flex;
   flex-direction: column;
@@ -63,6 +75,7 @@
   flex-direction: column;
   margin-bottom: 14px;
   flex: 1;
+  min-width: 0;
 }
 
 .form-group.full-width {
@@ -77,11 +90,10 @@
 
 .form-row .form-group {
   flex: 1;
+  min-width: 0;
 }
 
-/* =====================
-   Inputs
-   ===================== */
+/* Inputs*/
 .form-group input {
   width: 100%;
   height: 46px;
@@ -94,6 +106,7 @@
   color: #333;
   box-sizing: border-box;
   transition: box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .form-group input::placeholder {
@@ -104,18 +117,14 @@
   box-shadow: 0 0 0 3px rgba(200, 0, 62, 0.25);
 }
 
-/* =====================
-   Required Note
-   ===================== */
+/* Required note*/
 .required-note {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.45);
   margin-top: 5px;
 }
 
-/* =====================
-   Section Labels
-   ===================== */
+/*Section labels */
 .section-label {
   font-size: 13px;
   font-weight: 600;
@@ -124,9 +133,7 @@
   margin-top: 4px;
 }
 
-/* =====================
-   Subscription Plans
-   ===================== */
+/* Subscription plans */
 .plans-label {
   font-size: 13px;
   font-weight: 500;
@@ -143,6 +150,7 @@
 
 .plan-card {
   flex: 1;
+  min-width: 0;
   border: 1.5px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   padding: 14px;
@@ -152,6 +160,7 @@
   transition:
     border-color 0.2s ease,
     background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .plan-card:hover {
@@ -161,15 +170,13 @@
 
 .plan-card.selected {
   border-color: #e0194f;
-  /* background: rgba(200, 0, 62, 0.15); */
 }
 
 .plan-card h4 {
   font-size: 13px;
   font-weight: 700;
   color: white;
-  margin-bottom: 8px;
-  margin-top: 0;
+  margin: 0 0 8px;
 }
 
 .plan-card p {
@@ -179,9 +186,7 @@
   margin: 0;
 }
 
-/* =====================
-   Sign Up Button
-   ===================== */
+/*Sign up button */
 .btn-signup {
   width: 100%;
   height: 48px;
@@ -198,21 +203,25 @@
     opacity 0.2s ease,
     transform 0.15s ease;
   margin-bottom: 18px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .btn-signup:hover {
   opacity: 0.88;
   transform: translateY(-1px);
 }
-
 .btn-signup:active {
   transform: translateY(0);
   opacity: 1;
 }
+.btn-signup:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
 
-/* =====================
-   Sign In Row
-   ===================== */
+/*  Sign in row*/
 .signin-row {
   text-align: center;
   font-size: 12.5px;
@@ -229,15 +238,31 @@
   margin-left: 4px;
 }
 
-/* =====================
-   Responsive
-   ===================== */
-@media (max-width: 560px) {
+@media (max-width: 900px) {
   .signup-card {
-    width: 92%;
-    padding: 28px 20px 28px;
+    max-width: 560px;
+    padding: 32px 36px 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .signup-wrapper {
+    padding: 30px 16px;
   }
 
+  .signup-card {
+    max-width: 100%;
+    padding: 28px 28px 24px;
+  }
+
+  .page-title {
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Stack all two-column rows */
   .form-row {
     flex-direction: column;
     gap: 0;
@@ -246,5 +271,70 @@
   .plans-row {
     flex-direction: column;
     gap: 10px;
+  }
+
+  .plan-card {
+    padding: 12px;
+  }
+  .plan-card h4 {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signup-wrapper {
+    padding: 20px 10px;
+    align-items: flex-start;
+    padding-top: 30px;
+  }
+
+  .signup-card {
+    padding: 22px 16px 20px;
+    border-radius: 14px;
+  }
+
+  .logo-img {
+    width: 130px;
+  }
+  .page-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .form-group input {
+    height: 44px;
+    font-size: 13px;
+  }
+
+  .btn-signup {
+    height: 46px;
+    font-size: 14px;
+  }
+
+  .plans-label {
+    font-size: 12px;
+  }
+  .plan-card p {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .signup-card {
+    padding: 18px 12px 16px;
+  }
+  .logo-img {
+    width: 110px;
+  }
+  .page-title {
+    font-size: 16px;
+  }
+
+  .form-group input {
+    height: 42px;
+  }
+  .btn-signup {
+    height: 44px;
+    font-size: 13px;
   }
 }

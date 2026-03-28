@@ -6,9 +6,10 @@ import SignUp from "./Components/SignUp/SignUp";
 import DashboardLayout from "./Components/Dashboardlayout/Dashboardlayout";
 import DeviceList from "./Components/DeviceList/DeviceList";
 import SalesmanList from "./Components/Salesmanlist/Salesmanlist";
-import ProjectFilter from "./Components/ProjectFilter/ProjectFilter";
+import ProjectFilter from "./Components/Projectfilter/Projectfilter";
 import ClientList from "./Components/ClientList/ClientList";
 import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
+import CustomerList from "./Components/Salesmanlist/CustomerList/CustomerList";
 
 export default function App() {
   return (
@@ -49,15 +50,14 @@ export default function App() {
       */}
 
       {/* ── Salesman (user_type = "S") — uncomment when ready ──────── */}
-      {/*
+
       <Route element={<ProtectedRoute role="S" />}>
         <Route path="/salesman/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="salesman-list" replace />} />
-          <Route path="salesman-list"  element={<SalesmanList />} />
-          <Route path="project-filter" element={<ProjectFilter />} />
+          <Route index element={<Navigate to="customer-list" replace />} />
+          <Route path="customer-list" element={<CustomerList />} />
+          {/* <Route path="project-filter" element={<ProjectFilter />} /> */}
         </Route>
       </Route>
-      */}
 
       {/* ── Catch-all ────────────────────────────────────────────── */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,17 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Navbar from "../Navbar/Navbar";
 import Sidebar from "../Sidebar/Sidebar";
 import usePreventDashboardExit from "../../hooks/usePreventDashboardExit";
 import "./DashboardLayout.css";
-import { useEffect } from "react";
 
 export default function DashboardLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    return window.innerWidth > 768;
+  });
   const [darkMode, setDarkMode] = useState(false);
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let prevIsMobile = window.innerWidth <= 768;
+
+    const handleResize = () => {
+      const isMobile = window.innerWidth <= 768;
+
+      // Only update when crossing breakpoint
+      if (isMobile !== prevIsMobile) {
+        setSidebarOpen(!isMobile);
+        prevIsMobile = isMobile;
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleToggleDark = () => {
     setDarkMode((prev) => {
@@ -23,7 +41,7 @@ export default function DashboardLayout() {
   usePreventDashboardExit(setShowLogoutPopup);
 
   const confirmLogout = () => {
-    localStorage.clear(); // wipes token, user_id, user_type, user
+    localStorage.clear();
     setShowLogoutPopup(false);
     navigate("/", { replace: true });
   };

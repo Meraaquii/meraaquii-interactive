@@ -68,7 +68,6 @@ export default function Navbar({ onToggleSidebar, onToggleDark, darkMode }) {
       </div>
 
       <div className="navbar__right">
-        {/* Fullscreen toggle */}
         <button
           className="navbar__icon-btn"
           aria-label="Fullscreen"
@@ -77,7 +76,6 @@ export default function Navbar({ onToggleSidebar, onToggleDark, darkMode }) {
           {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
         </button>
 
-        {/* Dark mode toggle */}
         <button
           className="navbar__icon-btn"
           onClick={onToggleDark}
@@ -86,7 +84,6 @@ export default function Navbar({ onToggleSidebar, onToggleDark, darkMode }) {
           {darkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        {/* Profile dropdown */}
         <div className="navbar__profile-wrap" ref={wrapRef}>
           <button
             className="navbar__profile-btn"
@@ -95,7 +92,6 @@ export default function Navbar({ onToggleSidebar, onToggleDark, darkMode }) {
             <div className="navbar__avatar">
               <User size={16} />
             </div>
-            {/* Username comes from controller → service → localStorage */}
             <span className="navbar__username">{username}</span>
           </button>
 
