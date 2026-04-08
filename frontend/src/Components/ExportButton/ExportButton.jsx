@@ -7,22 +7,42 @@ export default function ExportButton({ data, columns, filename = "export" }) {
   const handleDownload = () => {
     if (!data?.length) return toast.error("No data to export");
 
+    const exportColumns = columns.filter(
+      (col) =>
+        col.key &&
+        !col.key.toLowerCase().includes("action") &&
+        typeof col.render !== "function",
+    );
+
+    const cleanedData = data.map((row) => {
+      const newRow = {};
+      exportColumns.forEach((col) => {
+        newRow[col.key] = row[col.key];
+      });
+      return newRow;
+    });
+
     let html = `<table border="1" style="border-collapse: collapse;">`;
+
     html += "<thead><tr>";
-    columns.forEach((col) => {
+    exportColumns.forEach((col) => {
       html += `<th>${col.label}</th>`;
     });
     html += "</tr></thead><tbody>";
-    data.forEach((row) => {
+
+    cleanedData.forEach((row) => {
       html += "<tr>";
-      columns.forEach((col) => {
+      exportColumns.forEach((col) => {
         html += `<td>${row[col.key] ?? ""}</td>`;
       });
       html += "</tr>";
     });
+
     html += "</tbody></table>";
 
-    const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+    const blob = new Blob([html], {
+      type: "application/vnd.ms-excel",
+    });
 
     saveAs(blob, `${filename}.xls`);
   };
@@ -30,7 +50,7 @@ export default function ExportButton({ data, columns, filename = "export" }) {
   return (
     <button
       className="export-btn"
-      title="Export Excel & Word"
+      title="Export Excel"
       onClick={handleDownload}
     >
       <LuDownload size={16} />

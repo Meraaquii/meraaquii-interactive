@@ -5,7 +5,6 @@ import Table from "../Table/Table";
 import ExportButton from "../ExportButton/ExportButton";
 import projectService from "../../services/projectService";
 import adminService from "../../services/Adminservice";
-import { fetchSalesman } from "../../services/salesmanService";
 import StatusUpdateConfirm from "../Projectfilter/StatusUpdateConfirm/StatusUpdateConfirm";
 import toast from "react-hot-toast";
 import "./ProjectFilter.css";
@@ -56,40 +55,29 @@ const CLIENT_COLUMNS = [
   },
 ];
 
-const SALESMAN_COLUMNS = [
-  { key: "project_name", label: "Project Name", width: "110px" },
-
-  {
-    key: "tower_name",
-    label: "Tower",
-    width: "110px",
-  },
-  {
-    key: "floor_name",
-    label: "Floor",
-    width: "110px",
-  },
-  {
-    key: "apartment_name",
-    label: "Unit Number",
-    width: "110px",
-  },
-  {
-    key: "flat_type_name",
-    label: "Type of Unit",
-    width: "110px",
-  },
-];
-
 const statusToCode = {
   Available: "Y",
   Reserve: "R",
   Booked: "N",
 };
 
+// function normalizeAdminProject(p) {
+//   return {
+//     project_name: p.project_name ?? p.projectName ?? "—",
+//     client_name: p.client_name ?? p.clientName ?? p.client ?? "—",
+//     status: p.status ?? p.project_status ?? "—",
+//     created_at: p.created_at ?? p.createdAt ?? "—",
+//     action: p.action ?? "",
+//   };
+// }
+
 function normalizeAdminProject(p) {
+  const rawName = p.project_name ?? p.projectName ?? "—";
+
   return {
-    project_name: p.project_name ?? p.projectName ?? "—",
+    ...p,
+    project_name: rawName === "D25-Phase 2 demo" ? "D25" : rawName,
+
     client_name: p.client_name ?? p.clientName ?? p.client ?? "—",
     status: p.status ?? p.project_status ?? "—",
     created_at: p.created_at ?? p.createdAt ?? "—",
@@ -147,38 +135,29 @@ export default function ProjectFilter() {
 
   const dammyProjects = [
     {
-      project_name: "District 25 Phase 3",
+      project_name: "Nambiar District 25 Phase 3",
       client_name: "Client X",
       status: "Available",
       created_at: "2024-01-01",
     },
 
     {
-      project_name: "Millenia",
+      project_name: "Nambiar Millenia",
       client_name: "Client Y",
       status: "Booked",
       created_at: "2024-02-01",
     },
 
     {
-      project_name: "Ellegenza",
+      project_name: "Nambiar ellegenza",
       client_name: "Client Z",
       status: "Reserve",
       created_at: "2024-03-01",
     },
   ];
 
-  const storedUser = localStorage.getItem("user");
-  const user = storedUser ? JSON.parse(storedUser) : null;
-  const userType = user?.user_type;
+  const userType = localStorage.getItem("user_type");
   const isAdmin = userType === "A";
-  const isSalesman = userType === "S";
-
-  const activeColumns = isAdmin
-    ? ADMIN_COLUMNS
-    : isSalesman
-      ? SALESMAN_COLUMNS
-      : CLIENT_COLUMNS;
 
   const getApartmentStatusLabel = (status) => {
     switch (status) {
@@ -221,47 +200,37 @@ export default function ProjectFilter() {
         if (isAdmin) {
           const raw = await adminService.getProjects();
           list = Array.isArray(raw) ? raw.map(normalizeAdminProject) : [];
-        } else if (isSalesman) {
-          const user_id = user?.user_id;
-          if (!user_id) throw new Error("user_id missing for salesman.");
-
-          // Import fetchSalesman from salesmanService at top of file:
-          // import { fetchSalesman } from "../../services/salesmanService";
-          const data = await fetchSalesman({ user_type: "S", user_id });
-
-          list = Array.isArray(data)
-            ? data.map((item) => ({
-                project_name: item.project_name || "—",
-                tower_name: item.tower_name || "—",
-                floor_name: item.floor_name || "—",
-                apartment_name: item.apartment_name || "—",
-                flat_type_name: item.flat_type_name || "—",
-                appartment_available: item.appartment_available || "Y",
-                apart_id: item.apart_id || null,
-              }))
-            : [];
         } else {
-          // Client view (optional)
+          const storedUser = localStorage.getItem("user");
+          if (!storedUser) throw new Error("User not logged in.");
+
+          const user = JSON.parse(storedUser);
+          if (!user.user_email || !user.user_type)
+            throw new Error("Invalid session. Please log in again.");
+
           const data = await projectService.getProjects(
-            user?.user_email,
-            user?.user_type,
+            user.user_email,
+            user.user_type,
           );
+
           list = data.success && Array.isArray(data.data) ? data.data : [];
+
+          list.forEach((row) => {
+            if (!row.apart_id) console.warn("Row missing apart_id", row);
+          });
         }
 
         setProjects(list);
         setTableRows(list);
       } catch (err) {
         setError(err.message || "Failed to fetch projects.");
-        setProjects([]);
-        setTableRows([]);
       } finally {
         setLoading(false);
       }
     };
 
     load();
-  }, [isAdmin, isSalesman]);
+  }, [isAdmin]);
 
   // Its Dammy data fetch
   // useEffect(() => {
@@ -284,27 +253,16 @@ export default function ProjectFilter() {
 
   //         const user = JSON.parse(storedUser);
 
-  //         console.log("Logged user:", user); // ✅ DEBUG
-
   //         const data = await projectService.getProjects(
   //           user.user_email,
   //           user.user_type,
-  //           user.user_id, // ✅ FIX HERE
   //         );
 
   //         realProjects =
   //           data.success && Array.isArray(data.data) ? data.data : [];
   //       }
 
-  //       const updatedRealProjects = realProjects.map((proj) => ({
-  //         ...proj,
-  //         project_name:
-  //           proj.project_name === "D25-Phase 2-Demo"
-  //             ? "District 25 Phase 2"
-  //             : proj.project_name,
-  //       }));
-
-  //       const merged = [...updatedRealProjects, ...dummy];
+  //       const merged = [...dummy, ...realProjects];
 
   //       setProjects(merged);
   //       setTableRows(merged);
@@ -312,7 +270,7 @@ export default function ProjectFilter() {
   //       if (realProjects.length > 0) {
   //         setFilters((prev) => ({
   //           ...prev,
-  //           project: "District 25 Phase 2",
+  //           project: realProjects[0].project_name,
   //         }));
   //       }
   //     } catch (err) {
@@ -527,25 +485,14 @@ export default function ProjectFilter() {
     ),
   }));
 
-  const getExportFileName = () => {
-    const parts = [];
-
-    if (filters.project) parts.push(filters.project);
-    if (filters.tower) parts.push(filters.tower);
-    if (filters.floor) parts.push("floor", filters.floor);
-    if (filters.apartment) parts.push("apartment", filters.apartment);
-
-    return parts.length > 0 ? parts.join(" - ") : "All Projects";
-  };
-
   return (
     <div className="project-filter">
       <div className="project-list__header">
         <h2 className="project-list__title">Project Filter List</h2>
         <ExportButton
           data={tableRows}
-          columns={activeColumns}
-          filename={getExportFileName()}
+          columns={isAdmin ? ADMIN_COLUMNS : CLIENT_COLUMNS}
+          filename="projects"
         />
       </div>
 
@@ -607,7 +554,10 @@ export default function ProjectFilter() {
         <p className="project-filter__loading">Loading…</p>
       ) : (
         <div className="project-filter__table-wrapper">
-          <Table rows={enrichedRows} columns={activeColumns} />
+          <Table
+            rows={enrichedRows}
+            columns={isAdmin ? ADMIN_COLUMNS : CLIENT_COLUMNS}
+          />
         </div>
       )}
 

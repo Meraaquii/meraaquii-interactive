@@ -17,6 +17,14 @@ const findClientIdByEmail = async (email) => {
   return rows[0]?.client_id;
 };
 
+// const findSalesmanIdByEmail = async (email) => {
+//   const [rows] = await pool.query(
+//     "SELECT salesman_id FROM mr_device WHERE device_name = ?",
+//     [email],
+//   );
+//   return rows[0]?.salesman_id;
+// };
+
 // Create new user
 const createUser = async (userData) => {
   const {
@@ -63,4 +71,5 @@ module.exports = {
   createUser,
   activateUser,
   findClientIdByEmail,
+  //findSalesmanIdByEmail,
 };

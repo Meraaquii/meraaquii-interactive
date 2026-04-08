@@ -11,24 +11,25 @@ const DEFAULT_COLUMNS = [
   { key: "action", label: "Action" },
 ];
 
-export default function Table({ rows = [], columns, onEdit, onDelete }) {
+export default function Table({ rows, columns, onEdit, onDelete }) {
   const [entries, setEntries] = useState(10);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
   const COLUMNS = columns ?? DEFAULT_COLUMNS;
 
-  const filtered = useMemo(
-    () =>
-      rows.filter((row) =>
-        Object.values(row).some((val) =>
-          String(val).toLowerCase().includes(search.toLowerCase()),
-        ),
+  const safeRows = Array.isArray(rows) ? rows : [];
+
+  const filtered = useMemo(() => {
+    return safeRows.filter((row) =>
+      Object.values(row || {}).some((val) =>
+        String(val).toLowerCase().includes(search.toLowerCase()),
       ),
-    [rows, search],
-  );
+    );
+  }, [safeRows, search]);
 
   const totalEntries = filtered.length;
+
   const totalPages =
     entries === "All" ? 1 : Math.ceil(totalEntries / Number(entries));
 
@@ -47,6 +48,7 @@ export default function Table({ rows = [], columns, onEdit, onDelete }) {
 
   return (
     <div className="table-card">
+      {/*Search */}
       <div className="table-card__controls">
         <div className="search-box">
           <FiSearch className="search-box__icon" />
@@ -63,6 +65,7 @@ export default function Table({ rows = [], columns, onEdit, onDelete }) {
         </div>
       </div>
 
+      {/*Table */}
       <div className="table-scroll-wrapper">
         <table className="data-table">
           <colgroup>
@@ -91,7 +94,7 @@ export default function Table({ rows = [], columns, onEdit, onDelete }) {
           <tbody>
             {visible.length > 0 ? (
               visible.map((row, i) => (
-                <tr key={i} className={row.rowClassName || ""}>
+                <tr key={i} className={row?.rowClassName || ""}>
                   {COLUMNS.map((col) => (
                     <td
                       key={col.key}
@@ -99,7 +102,7 @@ export default function Table({ rows = [], columns, onEdit, onDelete }) {
                     >
                       {col.render
                         ? col.render(row, onEdit, onDelete)
-                        : (row[col.key] ?? "—")}
+                        : (row?.[col.key] ?? "—")}
                     </td>
                   ))}
                 </tr>
@@ -115,6 +118,7 @@ export default function Table({ rows = [], columns, onEdit, onDelete }) {
         </table>
       </div>
 
+      {/* Footer */}
       <div className="table-card__footer">
         {/* Show entries */}
         <div className="show-entries">
@@ -154,12 +158,14 @@ export default function Table({ rows = [], columns, onEdit, onDelete }) {
             >
               <MdChevronLeft size={20} />
             </button>
+
             <span className="page-info">
-              {page} / {totalPages}
+              {page} / {totalPages || 1}
             </span>
+
             <button
               className="page-btn"
-              disabled={page === totalPages}
+              disabled={page === totalPages || totalPages === 0}
               onClick={handleNext}
             >
               <MdChevronRight size={20} />

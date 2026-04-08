@@ -11,7 +11,6 @@ export const getDeviceData = async (setRows, clientId) => {
       return;
     }
 
-    // Pass raw data directly — DeviceList's normalizeDevice handles mapping
     setRows(data);
   } catch (error) {
     console.error("Error fetching device data:", error);

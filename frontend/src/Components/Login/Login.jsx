@@ -39,8 +39,6 @@ const Login = () => {
           console.log("[Login] user object:", user);
           console.log("[Login] user_type:", JSON.stringify(user.user_type));
 
-          // ── Store auth ───────────────────────────────────────────
-          // Use token as the auth guard (not user_id which may be undefined)
           localStorage.setItem("token", user.token);
           localStorage.setItem("user_type", String(user.user_type).trim());
           localStorage.setItem("user_id", user.user_id ?? user.id ?? "");
@@ -54,7 +52,6 @@ const Login = () => {
 
           toast.success(`Welcome, ${user.user_name}!`);
 
-          // ── Navigate ─────────────────────────────────────────────
           const userType = String(user.user_type).trim();
           const route = ROLE_ROUTES[userType];
 

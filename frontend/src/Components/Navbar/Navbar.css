@@ -26,6 +26,7 @@
 .navbar__hamburger,
 .navbar__icon-btn {
   background: none;
+  margin: 15px;
   border: none;
   color: var(--navbar-icon-color);
   cursor: pointer;

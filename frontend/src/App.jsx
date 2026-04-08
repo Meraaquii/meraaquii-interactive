@@ -1,5 +1,3 @@
-// App.jsx
-// ✅ NO BrowserRouter here — main.jsx already provides it
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Components/Login/Login";
 import SignUp from "./Components/SignUp/SignUp";
@@ -14,13 +12,12 @@ import CustomerList from "./Components/Salesmanlist/CustomerList/CustomerList";
 export default function App() {
   return (
     <Routes>
-      {/* ── Public ──────────────────────────────────────────────── */}
       <Route path="/" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
 
-      {/* ── Admin  (user_type = "A") ─────────────────────────────── */}
+      {/*Admin  (user_type = "A")*/}
       <Route element={<ProtectedRoute role="A" />}>
-        <Route path="/admin/dashboard" element={<DashboardLayout />}>
+        <Route path="/admin/dashboard/*" element={<DashboardLayout />}>
           <Route index element={<Navigate to="device-list" replace />} />
           <Route path="device-list" element={<DeviceList />} />
           <Route path="project-list" element={<ProjectFilter />} />
@@ -28,9 +25,9 @@ export default function App() {
         </Route>
       </Route>
 
-      {/* ── Client (user_type = "C") ─────────────────────────────── */}
+      {/*Client (user_type = "C")*/}
       <Route element={<ProtectedRoute role="C" />}>
-        <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route path="/dashboard/*" element={<DashboardLayout />}>
           <Route index element={<Navigate to="device-list" replace />} />
           <Route path="device-list" element={<DeviceList />} />
           <Route path="salesman-list" element={<SalesmanList />} />
@@ -49,17 +46,17 @@ export default function App() {
       </Route>
       */}
 
-      {/* ── Salesman (user_type = "S") — uncomment when ready ──────── */}
+      {/*Salesman (user_type = "S")*/}
 
       <Route element={<ProtectedRoute role="S" />}>
-        <Route path="/salesman/dashboard" element={<DashboardLayout />}>
+        <Route path="/salesman/dashboard/*" element={<DashboardLayout />}>
           <Route index element={<Navigate to="customer-list" replace />} />
           <Route path="customer-list" element={<CustomerList />} />
-          {/* <Route path="project-filter" element={<ProjectFilter />} /> */}
+          <Route path="project-filter" element={<ProjectFilter />} />
         </Route>
       </Route>
 
-      {/* ── Catch-all ────────────────────────────────────────────── */}
+      {/*Catch-all*/}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

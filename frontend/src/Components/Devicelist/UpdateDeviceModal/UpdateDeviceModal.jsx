@@ -76,12 +76,10 @@ function UpdateDeviceModal({ isOpen, onClose, device, onSubmit }) {
   useEffect(() => {
     if (!isOpen || !device) return;
 
-    // Map API short codes to full status strings
     const rawStatus = device.deviceStatus ?? device.device_status ?? "";
     const deviceStatus =
       rawStatus === "A" ? "Active" : rawStatus === "I" ? "Inactive" : rawStatus;
 
-    // Match project by id, fallback to first project if API doesn't return project_id
     const deviceProjectId = device.projectId ?? device.project_id ?? null;
     const matched =
       deviceProjectId !== null && projects.length > 0

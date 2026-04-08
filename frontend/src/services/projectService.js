@@ -1,4 +1,3 @@
-// projectService.js
 import apiClient from "../api/apiClient";
 
 const statusMap = {

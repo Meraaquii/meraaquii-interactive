@@ -1,14 +1,39 @@
 const {
   addSalesman,
+  getAllSalesman: getAllSalesmanModel,
   updateSalesman: updateSalesmanModel,
   deleteSalesman: deleteSalesmanModel,
 } = require("../models/salesmanModel");
 
+const getAllSalesman = async (req, res) => {
+  try {
+    const { user_email, user_type, user_id } = req.query;
+
+    if (user_type === "S" && !user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "user_id is required for salesman access",
+      });
+    }
+
+    const salesmans = await getAllSalesmanModel(user_email, user_type, user_id);
+
+    res.json({
+      success: true,
+      data: salesmans,
+    });
+  } catch (error) {
+    console.error("Error in getAllSalesman:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get salesmans",
+    });
+  }
+};
+
 const createSalesman = async (req, res) => {
   try {
-    const salesmanData = req.body;
-
-    const newSalesmanId = await addSalesman(salesmanData);
+    const newSalesmanId = await addSalesman(req.body);
 
     res.json({
       success: true,
@@ -17,15 +42,16 @@ const createSalesman = async (req, res) => {
     });
   } catch (error) {
     if (error.message === "Email already exists") {
-      return res.status(400).json({
-        success: false,
-        message: "Email already exists",
-      });
+      return res.status(400).json({ success: false, message: error.message });
+    }
+
+    if (error.message === "All fields are required") {
+      return res.status(400).json({ success: false, message: error.message });
     }
 
     res.status(500).json({
       success: false,
-      message: "Failed to add salesman",
+      message: error.message,
     });
   }
 };
@@ -33,9 +59,8 @@ const createSalesman = async (req, res) => {
 const updateSalesman = async (req, res) => {
   try {
     const id = req.params.id;
-    const salesmanData = req.body;
 
-    const updated = await updateSalesmanModel(id, salesmanData);
+    const updated = await updateSalesmanModel(id, req.body);
 
     if (updated) {
       res.json({
@@ -49,11 +74,17 @@ const updateSalesman = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Update Error:", error);
+    if (error.message === "Email already exists") {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+
+    if (error.message === "All fields are required") {
+      return res.status(400).json({ success: false, message: error.message });
+    }
 
     res.status(500).json({
       success: false,
-      message: "Failed to update salesman",
+      message: error.message,
     });
   }
 };
@@ -76,7 +107,7 @@ const deleteSalesman = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Delete Error:", error); // 👈 Add this
+    console.error("Delete Error:", error);
 
     res.status(500).json({
       success: false,
@@ -85,4 +116,9 @@ const deleteSalesman = async (req, res) => {
   }
 };
 
-module.exports = { createSalesman, updateSalesman, deleteSalesman };
+module.exports = {
+  getAllSalesman,
+  createSalesman,
+  updateSalesman,
+  deleteSalesman,
+};

@@ -37,14 +37,9 @@ function UpdateSalesmanList({ onClose, salesman, refreshData }) {
     e.preventDefault();
 
     try {
-      const payload = {
-        ...formData,
-        id: salesman.id,
-      };
+      console.log("Updating:", formData);
 
-      console.log("Updating:", payload);
-
-      await updateSalesman(payload);
+      await updateSalesman(salesman.id, formData);
 
       toast.success("Salesman updated successfully!");
 

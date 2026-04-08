@@ -4,6 +4,23 @@ const {
   updateApartmentStatusModel,
 } = require("../models/projectModel.js");
 
+// const getProjects = async (req, res) => {
+//   try {
+//     const projects = await getAllProjects(); // no params
+
+//     return res.status(200).json({
+//       success: true,
+//       data: projects,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to get projects",
+//     });
+//   }
+// };
+
 const getProjects = async (req, res) => {
   try {
     const { user_email, user_type } = req.query;

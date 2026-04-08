@@ -1,54 +1,75 @@
-import React, { use, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Table from "../../Table/Table";
 import "./CustomerList.css";
 import ExportButton from "../../ExportButton/ExportButton";
-import { FiEdit2, FiTrash2, FiUserPlus } from "react-icons/fi";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import {
+  getCustomerData,
+  deleteCustomerData,
+  updateCustomerData,
+} from "../../../controllers/customersController";
+import CustomerModal from "../CustomerList/CustomerModal/CustomerModal";
+import toast from "react-hot-toast";
 
 function CustomerList() {
-  const [rows, setRows] = React.useState();
+  const [rows, setRows] = useState([]);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [formData, setFormData] = useState({
+    customer_name: "",
+    customer_phone_no: "",
+    customer_email: "",
+    customer_address: "",
+  });
 
-  const dummyData = [
-    {
-      id: 1,
-      name: "Rohit Kumar",
-      contact_no: "123-456-7890",
-      email: "rohit.kumar@gmail.com",
-      address: "Dhanbad, Jharkhand, India",
-    },
-    {
-      id: 2,
-      name: "Kajal Singh",
-      contact_no: "987-654-3210",
-      email: "kajal.singh@gmail.com",
-      address: "Ranchi, Jharkhand, India",
-    },
-    {
-      id: 3,
-      name: "Santosh Sharma",
-      contact_no: "555-123-4567",
-      email: "santosh.sharma@gmail.com",
-      address: "Jamshedpur, Jharkhand, India",
-    },
-    {
-      id: 4,
-      name: "Prem Verma",
-      contact_no: "111-222-3333",
-      email: "prem.verma@gmail.com",
-      address: "Bhubaneswar, Odisha, India",
-    },
-  ];
-
-  const handleEdit = (rows) => {
-    console.log("Edit Customer", rows);
-  };
-
-  const handleDelete = (rows) => {
-    console.log("Delete Customer", rows);
-  };
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-    setRows(dummyData);
+    if (user?.user_id) {
+      getCustomerData(setRows, user.user_id);
+    }
   }, []);
+
+  const handleEdit = (row) => {
+    setSelectedCustomer(row);
+    setFormData({
+      customer_name: row.name,
+      customer_phone_no: row.contact_no,
+      customer_email: row.email,
+      customer_address: row.address,
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleDelete = async (row) => {
+    try {
+      await deleteCustomerData(row.id);
+      toast.success("Customer deleted successfully");
+      getCustomerData(setRows, user.user_id);
+    } catch (error) {
+      console.error("Delete failed:", error.message);
+      toast.error("Failed to delete customer");
+    }
+  };
+
+  const handleUpdate = async () => {
+    try {
+      await updateCustomerData(selectedCustomer.id, formData);
+      toast.success("Customer updated successfully");
+      setIsEditOpen(false);
+      getCustomerData(setRows, user.user_id);
+    } catch (error) {
+      console.error("Update failed:", error.message);
+      toast.error("Failed to update customer");
+    }
+  };
 
   const CUSTOMER_COLUMNS = [
     { key: "name", label: "Customer Name" },
@@ -78,10 +99,6 @@ function CustomerList() {
       <div className="customer-list__header">
         <h1 className="customer-list__title">Customer List</h1>
         <div className="customer-list__controls">
-          {/* <button className="customer-list__add-btn">
-            <FiUserPlus size={14} />
-            Add
-          </button> */}
           <ExportButton
             data={rows}
             columns={CUSTOMER_COLUMNS}
@@ -89,11 +106,18 @@ function CustomerList() {
           />
         </div>
       </div>
+
       <div className="customer-list__table-wrapper">
         <Table rows={rows} columns={CUSTOMER_COLUMNS} />
       </div>
 
-      <div></div>
+      <CustomerModal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        formData={formData}
+        handleChange={handleChange}
+        handleUpdate={handleUpdate}
+      />
     </div>
   );
 }

@@ -1,5 +1,4 @@
-// components/ProtectedRoute/ProtectedRoute.jsx
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 const ROLE_HOME = {
   A: "/admin/dashboard",
@@ -9,30 +8,34 @@ const ROLE_HOME = {
 };
 
 export default function ProtectedRoute({ role }) {
-  // ✅ Guard on token — always present after login
-  //    (user_id can be empty string if backend field name differs)
+  const location = useLocation();
+
   const token = localStorage.getItem("token");
-  const user_type = localStorage.getItem("user_type");
+  const user_type = localStorage.getItem("user_type")?.trim().toUpperCase();
 
   console.log(
-    `[ProtectedRoute] token=${!!token} | user_type="${user_type}" | required="${role}"`,
+    `[ProtectedRoute] token=${!!token} | user_type="${user_type}" | required="${role}" | path="${location.pathname}"`,
   );
 
-  // 1️⃣ Not logged in
   if (!token) {
-    console.log("[ProtectedRoute] No token → /");
+    console.log("[ProtectedRoute] No token → redirect to login");
     return <Navigate to="/" replace />;
   }
 
-  // 2️⃣ Role mismatch
   if (role) {
-    const allowed = Array.isArray(role) ? role : [role];
-    if (!allowed.includes(user_type)) {
-      const home = ROLE_HOME[user_type] ?? "/";
-      console.log(`[ProtectedRoute] Mismatch → ${home}`);
-      return <Navigate to={home} replace />;
+    const allowedRoles = Array.isArray(role) ? role : [role];
+
+    const normalizedAllowed = allowedRoles.map((r) => r.toUpperCase());
+
+    if (!normalizedAllowed.includes(user_type)) {
+      const redirectPath = ROLE_HOME[user_type] || "/";
+      console.log(
+        `[ProtectedRoute] Role mismatch → redirect to ${redirectPath}`,
+      );
+      return <Navigate to={redirectPath} replace />;
     }
   }
 
+  console.log("[ProtectedRoute] Access granted");
   return <Outlet />;
 }

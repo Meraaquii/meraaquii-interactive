@@ -8,20 +8,27 @@ const deviceRoutes = require("./routes/deviceRoute.js");
 const projectRoutes = require("./routes/projectRoutes.js");
 const adminRoutes = require("./routes/adminRoutes.js");
 const salesmanRoutes = require("./routes/salesmanRoutes.js");
+const customerRoutes = require("./routes/customerRoutes.js");
 
 dotenv.config();
+const BASE_URL = "/v1/api";
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/v1/api/auth", authRoutes);
-app.use("/v1/api/clients", clientRoutes);
-app.use("/v1/api/device", deviceRoutes);
-app.use("/v1/api/project", projectRoutes);
-app.use("/v1/api/admin", adminRoutes);
-app.use("/v1/api/salesman", salesmanRoutes);
+app.get("/", (req, res) => {
+  res.send("API is running!");
+});
+
+app.use(`${BASE_URL}/auth`, authRoutes);
+app.use(`${BASE_URL}/clients`, clientRoutes);
+app.use(`${BASE_URL}/device`, deviceRoutes);
+app.use(`${BASE_URL}/project`, projectRoutes);
+app.use(`${BASE_URL}/admin`, adminRoutes);
+app.use(`${BASE_URL}/salesman`, salesmanRoutes);
+app.use(`${BASE_URL}/customer`, customerRoutes);
 
 const PORT = 5500;
 app.listen(PORT, () => {

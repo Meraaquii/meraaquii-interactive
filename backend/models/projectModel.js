@@ -1,8 +1,14 @@
 const db = require("../config/database.js");
 
+// const getAllProjects = async () => {
+//   const query = `SELECT * FROM mr_project_details`;
+//   const [rows] = await db.execute(query);
+//   return rows;
+// };
+
 const getAllProjects = async (user_email, user_type) => {
   let query = `
-    SELECT 
+    SELECT
       pm.project_id,
       pd.project_name,
       t.tower_name,
@@ -14,7 +20,7 @@ const getAllProjects = async (user_email, user_type) => {
       c.client_email,
       pm.project_status,
       pm.created_on,
-      ft.flat_type_name   
+      ft.flat_type_name
     FROM mr_project_master pm
     LEFT JOIN mr_project_details pd ON pd.project_id = pm.project_id
     LEFT JOIN mr_client c ON c.client_id = pm.client_id

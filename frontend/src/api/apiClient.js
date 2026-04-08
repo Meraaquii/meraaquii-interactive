@@ -2,6 +2,7 @@ import axios from "axios";
 
 const apiClient = axios.create({
   baseURL: "http://localhost:5500/v1/api",
+  //baseURL: "https://interactive.meraaquii.com/nodeapis/v1",
   headers: {
     "Content-Type": "application/json",
   },
@@ -23,8 +24,10 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/";
+
+      console.warn("Unauthorized - token removed");
     }
+
     return Promise.reject(error);
   },
 );

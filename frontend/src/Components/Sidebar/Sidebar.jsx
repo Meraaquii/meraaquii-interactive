@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MdChevronRight, MdOutlinePerson } from "react-icons/md";
 import { RiArrowDropDownLine } from "react-icons/ri";
@@ -82,14 +83,118 @@ const MENU_CONFIG = {
       path: "/salesman/dashboard/customer-list",
       type: "link",
     },
-    // {
-    //   id: "project-filter",
-    //   name: "Project Filter",
-    //   icon: <LuFilter className="nav-icons" />,
-    //   path: "/salesman/dashboard/project-filter",
-    //   type: "link",
-    // },
+    {
+      id: "project-filter",
+      name: "Project Filter",
+      icon: <LuFilter className="nav-icons" />,
+      path: "/salesman/dashboard/project-filter",
+      type: "link",
+    },
   ],
+};
+
+const Tooltip = ({ text, targetRef, visible }) => {
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    if (visible && targetRef.current) {
+      const rect = targetRef.current.getBoundingClientRect();
+      setPos({
+        top: rect.top + rect.height / 2,
+        left: rect.right + 10,
+      });
+    }
+  }, [visible, targetRef]);
+
+  if (!visible || !text) return null;
+
+  return createPortal(
+    <div className="sidebar-tooltip" style={{ top: pos.top, left: pos.left }}>
+      {text}
+    </div>,
+    document.body,
+  );
+};
+
+const MenuItem = ({ item, isActive, isExpanded, onClick }) => {
+  const [hovered, setHovered] = useState(false);
+  const ref = useRef(null);
+
+  return (
+    <div
+      ref={ref}
+      className={`menu-item ${isActive ? "menu-item-active" : ""} ${
+        hovered ? "menu-item-hover" : ""
+      }`}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="menu-item-content">
+        {item.icon}
+        <span className="menu-text">{item.name}</span>
+      </div>
+      {isActive && <div className="active-indicator" />}
+
+      <Tooltip
+        //text={item.name}
+        targetRef={ref}
+        visible={!isExpanded && hovered}
+      />
+    </div>
+  );
+};
+
+const DropdownMenuItem = ({
+  item,
+  isActive,
+  isExpanded,
+  isOpen,
+  onClick,
+  children,
+}) => {
+  const [hovered, setHovered] = useState(false);
+  const ref = useRef(null);
+
+  return (
+    <>
+      <div
+        ref={ref}
+        className={`menu-item ${isActive ? "menu-item-active" : ""} ${
+          hovered ? "menu-item-hover" : ""
+        }`}
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        <div className="menu-item-content">
+          {item.icon}
+          <span className="menu-text">{item.name}</span>
+        </div>
+
+        <div className="table-card__toolbar">
+          <button className="export-btn" title="Export">
+            <LuDownload size={15} />
+          </button>
+        </div>
+
+        <div className="menu-item-actions">
+          {isActive && <div className="active-indicator" />}
+          <RiArrowDropDownLine
+            className={`dropdown-arrow ${isOpen ? "rotated" : ""}`}
+          />
+        </div>
+
+        <Tooltip
+          text={item.name}
+          targetRef={ref}
+          visible={!isExpanded && hovered}
+        />
+      </div>
+
+      {children}
+    </>
+  );
 };
 
 const Sidebar = ({ isVisible, onToggle }) => {
@@ -97,25 +202,19 @@ const Sidebar = ({ isVisible, onToggle }) => {
   const location = useLocation();
 
   const [activeSection, setActiveSection] = useState(null);
-  const [hoveredItem, setHoveredItem] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  // Track mobile breakpoint
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const toggleSection = (section) => {
+  const toggleSection = (section) =>
     setActiveSection((prev) => (prev === section ? null : section));
-  };
 
   const handleNavigation = (path) => {
     navigate(path);
-    // Close sidebar on mobile after navigation
     if (isMobile) onToggle();
   };
 
@@ -150,7 +249,6 @@ const Sidebar = ({ isVisible, onToggle }) => {
 
   return (
     <>
-      {/* Overlay — mobile only, shown when sidebar is open */}
       {isMobile && isVisible && (
         <div className="sidebar-overlay" onClick={onToggle} />
       )}
@@ -165,8 +263,6 @@ const Sidebar = ({ isVisible, onToggle }) => {
                 <img src={smallLogo} alt="Meraaquii" />
               </div>
             </div>
-
-            {/* Close button — mobile only */}
             <button className="close-button" onClick={onToggle}>
               ✕
             </button>
@@ -181,57 +277,20 @@ const Sidebar = ({ isVisible, onToggle }) => {
                 style={{ "--item-index": index }}
               >
                 {item.type === "link" ? (
-                  <div
-                    className={`menu-item ${
-                      isItemActive(item.path) ? "menu-item-active" : ""
-                    } ${hoveredItem === item.id ? "menu-item-hover" : ""}`}
+                  <MenuItem
+                    item={item}
+                    isActive={isItemActive(item.path)}
+                    isExpanded={isExpanded}
                     onClick={() => handleItemClick(item)}
-                    onMouseEnter={() => setHoveredItem(item.id)}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    title={!isExpanded ? item.name : ""}
-                  >
-                    <div className="menu-item-content">
-                      {item.icon}
-                      <span className="menu-text">{item.name}</span>
-                    </div>
-                    {isItemActive(item.path) && (
-                      <div className="active-indicator" />
-                    )}
-                  </div>
+                  />
                 ) : (
-                  <>
-                    <div
-                      className={`menu-item ${
-                        isItemActive(item.path) ? "menu-item-active" : ""
-                      } ${hoveredItem === item.id ? "menu-item-hover" : ""}`}
-                      onClick={() => handleItemClick(item)}
-                      onMouseEnter={() => setHoveredItem(item.id)}
-                      onMouseLeave={() => setHoveredItem(null)}
-                      title={!isExpanded ? item.name : ""}
-                    >
-                      <div className="menu-item-content">
-                        {item.icon}
-                        <span className="menu-text">{item.name}</span>
-                      </div>
-
-                      <div className="table-card__toolbar">
-                        <button className="export-btn" title="Export">
-                          <LuDownload size={15} />
-                        </button>
-                      </div>
-
-                      <div className="menu-item-actions">
-                        {isItemActive(item.path) && (
-                          <div className="active-indicator" />
-                        )}
-                        <RiArrowDropDownLine
-                          className={`dropdown-arrow ${
-                            activeSection === item.id ? "rotated" : ""
-                          }`}
-                        />
-                      </div>
-                    </div>
-
+                  <DropdownMenuItem
+                    item={item}
+                    isActive={isItemActive(item.path)}
+                    isExpanded={isExpanded}
+                    isOpen={activeSection === item.id}
+                    onClick={() => handleItemClick(item)}
+                  >
                     <div
                       className={`submenu ${
                         activeSection === item.id && isExpanded
@@ -255,7 +314,7 @@ const Sidebar = ({ isVisible, onToggle }) => {
                         </div>
                       ))}
                     </div>
-                  </>
+                  </DropdownMenuItem>
                 )}
               </div>
             ))}
