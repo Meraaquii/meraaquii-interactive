@@ -7,7 +7,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 1001;
   padding: 16px;
 }
 
@@ -122,6 +122,7 @@
   font-size: 15px;
   background: #f8fafc;
   transition: all 0.2s ease;
+  color: #75787b;
 }
 
 /* Focus */
@@ -210,6 +211,7 @@
   font-size: 13px;
   color: #3730a3;
   font-weight: 500;
+  margin-bottom: 10px;
 }
 
 .udm-tag-remove {
@@ -246,4 +248,139 @@
   .udm-form-grid {
     grid-template-columns: 1fr 1fr 1fr;
   }
+}
+
+/* Dropdown Container */
+.udm-dropdown-container {
+  position: relative;
+}
+
+/* Dropdown Trigger (Custom Select Button) */
+.udm-dropdown-trigger {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  font-size: 15px;
+  background: #f8fafc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.udm-dropdown-trigger:hover {
+  border-color: #6366f1;
+  background: #ffffff;
+}
+
+.udm-dropdown-trigger.active {
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.udm-dropdown-trigger-text {
+  color: #64748b;
+}
+
+.udm-dropdown-trigger-text.has-selection {
+  color: #1e293b;
+}
+
+/* Selected projects in trigger - flex with gap */
+.udm-dropdown-trigger-projects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+
+.udm-dropdown-trigger-project {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  /* background: #eef2ff;
+  border: 1px solid #c7d2fe; */
+  border-radius: 4px;
+  font-size: 13px;
+  /* color: #4338ca; */
+  white-space: nowrap;
+}
+
+.udm-dropdown-arrow {
+  transition: transform 0.2s ease;
+  color: #64748b;
+}
+
+.udm-dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Checkbox Styling - Default browser size */
+.udm-dropdown-item input[type="checkbox"] {
+  width: auto;
+  height: auto;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+  transform: scale(1);
+}
+
+/* Dropdown Menu */
+.udm-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  padding: 6px;
+}
+
+/* Dropdown Empty State */
+.udm-dropdown-empty {
+  padding: 12px;
+  color: #888;
+  font-size: 14px;
+}
+
+/* Dropdown Item */
+.udm-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.15s ease;
+  color: #334155;
+  margin-bottom: 2px;
+}
+
+.udm-dropdown-item:last-child {
+  margin-bottom: 0;
+}
+
+.udm-dropdown-item:hover {
+  background: #f1f5f9;
+}
+
+.udm-dropdown-item.selected {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+/* Dropdown Backdrop */
+.udm-dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
 }

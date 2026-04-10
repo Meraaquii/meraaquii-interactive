@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { IoPersonAddOutline } from "react-icons/io5";
 import Table from "../Table/Table";
 import ExportButton from "../ExportButton/ExportButton";
@@ -12,6 +12,7 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { TbEdit } from "react-icons/tb";
 import { toast } from "react-hot-toast";
 import DeleteConfirmModal from "../DeleteConfirmModal/DeleteConfirmModal";
+import { useLayout } from "../Dashboardlayout/Dashboardlayout";
 import "./SalesmanList.css";
 
 export default function SalesmanList() {
@@ -24,6 +25,7 @@ export default function SalesmanList() {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const clientId = user?.client_id;
+  const { setSidebarBlur } = useLayout() ?? {};
 
   const loadData = () => {
     if (clientId) {
@@ -38,6 +40,7 @@ export default function SalesmanList() {
   const handleEdit = (row) => {
     setSelectedSalesman(row);
     setShowEditModal(true);
+    setSidebarBlur?.(true); // Blur sidebar when modal opens
   };
 
   const handleDelete = (row) => {
@@ -123,6 +126,7 @@ export default function SalesmanList() {
           onClose={() => {
             setShowEditModal(false);
             setSelectedSalesman(null);
+            setSidebarBlur?.(false);
           }}
           salesman={selectedSalesman}
           refreshData={loadData}

@@ -22,9 +22,9 @@ const getAllProjects = async (user_email, user_type) => {
       pm.created_on,
       ft.flat_type_name
     FROM mr_project_master pm
-    LEFT JOIN mr_project_details pd ON pd.project_id = pm.project_id
+    LEFT JOIN mr_project_details pd ON pd.project_id = 18 -- pm.project_id
     LEFT JOIN mr_client c ON c.client_id = pm.client_id
-    LEFT JOIN mr_tower_master t ON t.project_id = pm.project_id
+    LEFT JOIN mr_tower_master t ON t.project_id = 18 -- pm.project_id
     LEFT JOIN mr_floor_master f ON f.tower_id = t.tower_id
     LEFT JOIN mr_appartment_master a ON a.floor_id = f.floor_id
     LEFT JOIN mr_flat_type ft ON ft.flat_type_id = a.flat_type_id

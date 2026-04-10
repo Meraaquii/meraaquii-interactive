@@ -6,6 +6,7 @@ import { TbEdit } from "react-icons/tb";
 import Table from "../Table/Table";
 import "./Devicelist.css";
 import UpdateDeviceModal from "../Devicelist/UpdateDeviceModal/UpdateDeviceModal";
+import { useLayout } from "../Dashboardlayout/Dashboardlayout";
 
 const DEVICELIST_COLUMNS = [
   { key: "deviceName", label: "Device Name" },
@@ -22,22 +23,28 @@ export default function DeviceList() {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState(null);
+  const { setSidebarBlur } = useLayout() ?? {};
 
   const user = JSON.parse(localStorage.getItem("user") ?? "{}");
   const userType = localStorage.getItem("user_type");
   const clientId = user?.client_id;
   const isAdmin = userType === "A";
 
-  const handleEdit = useCallback((device) => {
-    const fullDevice = {
-      ...device,
-      clientId: device.client_id ?? device.clientId ?? null,
-    };
-    console.log("DEVICE FOR MODAL:", fullDevice);
-    console.log("RAW DEVICE:", JSON.stringify(device));
-    setSelectedDevice(fullDevice);
-    setIsModalOpen(true);
-  }, []);
+  const handleEdit = useCallback(
+    (device) => {
+      const fullDevice = {
+        ...device,
+        clientId: device.client_id ?? device.clientId ?? null,
+      };
+      console.log("DEVICE FOR MODAL:", fullDevice);
+      console.log("RAW DEVICE:", JSON.stringify(device));
+      setSelectedDevice(fullDevice);
+      setIsModalOpen(true);
+      setSidebarBlur?.(true); // Blur sidebar when modal opens
+      console.log("[DeviceList] Sidebar blur set to TRUE");
+    },
+    [setSidebarBlur],
+  );
 
   const getStatusLabel = (status) => {
     switch (status) {
@@ -123,9 +130,17 @@ export default function DeviceList() {
       setRawDevices(updatedList);
       setRows(updatedList.map(normalizeDevice));
       setIsModalOpen(false);
+      setSidebarBlur?.(false);
+      console.log("[DeviceList] Sidebar blur set to FALSE (submit)");
     },
-    [rawDevices, selectedDevice, normalizeDevice],
+    [rawDevices, selectedDevice, normalizeDevice, setSidebarBlur],
   );
+
+  const handleModalClose = useCallback(() => {
+    setIsModalOpen(false);
+    setSidebarBlur?.(false);
+    console.log("[DeviceList] Sidebar blur set to FALSE (close)");
+  }, [setSidebarBlur]);
 
   return (
     <div className="device-list">
@@ -148,7 +163,7 @@ export default function DeviceList() {
 
       <UpdateDeviceModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalClose}
         device={selectedDevice}
         onSubmit={handleModalSubmit}
       />

@@ -1,14 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Navbar from "../Navbar/Navbar";
 import Sidebar from "../Sidebar/Sidebar";
 import usePreventDashboardExit from "../../hooks/usePreventDashboardExit";
 import "./DashboardLayout.css";
 
+// Context for controlling layout-level states like sidebar blur
+const LayoutContext = createContext(null);
+
+export function useLayout() {
+  return useContext(LayoutContext);
+}
+
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     return window.innerWidth > 768;
   });
+  const [sidebarBlur, setSidebarBlur] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
@@ -20,7 +28,6 @@ export default function DashboardLayout() {
     const handleResize = () => {
       const isMobile = window.innerWidth <= 768;
 
-      // Only update when crossing breakpoint
       if (isMobile !== prevIsMobile) {
         setSidebarOpen(!isMobile);
         prevIsMobile = isMobile;
@@ -58,42 +65,44 @@ export default function DashboardLayout() {
   }, []);
 
   return (
-    <div className={`layout${darkMode ? " dark-theme" : ""}`}>
-      <div className="layout__inner">
-        <Sidebar
-          isVisible={sidebarOpen}
-          onToggle={() => setSidebarOpen((v) => !v)}
-        />
-
-        <div className="layout__right">
-          <Navbar
-            darkMode={darkMode}
-            onToggleDark={handleToggleDark}
-            onToggleSidebar={() => setSidebarOpen((v) => !v)}
+    <LayoutContext.Provider value={{ setSidebarBlur }}>
+      <div className={`layout${darkMode ? " dark-theme" : ""}`}>
+        <div className="layout__inner">
+          <Sidebar
+            isVisible={sidebarOpen}
+            onToggle={() => setSidebarOpen((v) => !v)}
+            blur={sidebarBlur}
           />
 
-          <main className="layout__main">
-            <Outlet />
-          </main>
-        </div>
-      </div>
+          <div className="layout__right">
+            <Navbar
+              darkMode={darkMode}
+              onToggleDark={handleToggleDark}
+              onToggleSidebar={() => setSidebarOpen((v) => !v)}
+            />
 
-      {showLogoutPopup && (
-        <div className="logout-overlay">
-          <div className="logout-modal">
-            <h3>Confirm Logout</h3>
-            <p>Are you sure you want to logout?</p>
-            <div className="logout-actions">
-              <button className="cancel-btn" onClick={cancelLogout}>
-                Cancel
-              </button>
-              <button className="logout-btn" onClick={confirmLogout}>
-                Logout
-              </button>
-            </div>
+            <main className="layout__main">
+              <Outlet />
+            </main>
           </div>
         </div>
-      )}
-    </div>
+        {showLogoutPopup && (
+          <div className="logout-overlay">
+            <div className="logout-modal">
+              <h3>Confirm Logout</h3>
+              <p>Are you sure you want to logout?</p>
+              <div className="logout-actions">
+                <button className="cancel-btn" onClick={cancelLogout}>
+                  Cancel
+                </button>
+                <button className="logout-btn" onClick={confirmLogout}>
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </LayoutContext.Provider>
   );
 }

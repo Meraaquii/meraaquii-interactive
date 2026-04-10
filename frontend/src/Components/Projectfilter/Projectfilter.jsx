@@ -210,26 +210,81 @@ export default function ProjectFilter() {
 
   // Its Real data fetch
 
+  // useEffect(() => {
+  //   const load = async () => {
+  //     setLoading(true);
+  //     setError(null);
+
+  //     try {
+  //       let list = [];
+
+  //       if (isAdmin) {
+  //         const raw = await adminService.getProjects();
+  //         list = Array.isArray(raw) ? raw.map(normalizeAdminProject) : [];
+  //       } else if (isSalesman) {
+  //         const user_id = user?.user_id;
+  //         if (!user_id) throw new Error("user_id missing for salesman.");
+
+  //         const data = await fetchSalesman({ user_type: "S", user_id });
+
+  //         list = Array.isArray(data)
+  //           ? data.map((item) => ({
+  //               project_name: item.project_name || "—",
+  //               tower_name: item.tower_name || "—",
+  //               floor_name: item.floor_name || "—",
+  //               apartment_name: item.apartment_name || "—",
+  //               flat_type_name: item.flat_type_name || "—",
+  //               appartment_available: item.appartment_available || "Y",
+  //               apart_id: item.apart_id || null,
+  //             }))
+  //           : [];
+  //       } else {
+  //         // Client view (optional)
+  //         const data = await projectService.getProjects(
+  //           user?.user_email,
+  //           user?.user_type,
+  //         );
+  //         list = data.success && Array.isArray(data.data) ? data.data : [];
+  //       }
+
+  //       setProjects(list);
+  //       setTableRows(list);
+  //     } catch (err) {
+  //       setError(err.message || "Failed to fetch projects.");
+  //       setProjects([]);
+  //       setTableRows([]);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   load();
+  // }, [isAdmin, isSalesman]);
+
+  // Its Dammy data fetch
+  // Its Dammy data fetch
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        let list = [];
+        let realProjects = [];
+        let dummy = dammyProjects.map(normalizeAdminProject);
 
         if (isAdmin) {
           const raw = await adminService.getProjects();
-          list = Array.isArray(raw) ? raw.map(normalizeAdminProject) : [];
+          realProjects = Array.isArray(raw)
+            ? raw.map(normalizeAdminProject)
+            : [];
         } else if (isSalesman) {
+          // ✅ ADD THIS BLOCK
           const user_id = user?.user_id;
           if (!user_id) throw new Error("user_id missing for salesman.");
 
-          // Import fetchSalesman from salesmanService at top of file:
-          // import { fetchSalesman } from "../../services/salesmanService";
           const data = await fetchSalesman({ user_type: "S", user_id });
 
-          list = Array.isArray(data)
+          realProjects = Array.isArray(data)
             ? data.map((item) => ({
                 project_name: item.project_name || "—",
                 tower_name: item.tower_name || "—",
@@ -241,90 +296,52 @@ export default function ProjectFilter() {
               }))
             : [];
         } else {
-          // Client view (optional)
+          // Client view
+          const storedUser = localStorage.getItem("user");
+          if (!storedUser) throw new Error("User not logged in.");
+
+          const parsedUser = JSON.parse(storedUser);
+
           const data = await projectService.getProjects(
-            user?.user_email,
-            user?.user_type,
+            parsedUser.user_email,
+            parsedUser.user_type,
+            parsedUser.user_id,
           );
-          list = data.success && Array.isArray(data.data) ? data.data : [];
+
+          realProjects =
+            data.success && Array.isArray(data.data) ? data.data : [];
         }
 
-        setProjects(list);
-        setTableRows(list);
+        const updatedRealProjects = realProjects.map((proj) => ({
+          ...proj,
+          project_name:
+            proj.project_name === "D25-Phase 2-Demo"
+              ? "District 25 Phase 2"
+              : proj.project_name,
+        }));
+
+        const merged = [...updatedRealProjects, ...dummy];
+
+        setProjects(merged);
+        setTableRows(merged);
+
+        if (realProjects.length > 0) {
+          setFilters((prev) => ({
+            ...prev,
+            project: isSalesman
+              ? realProjects[0].project_name
+              : "District 25 Phase 2", // ✅ salesman-safe default
+          }));
+        }
       } catch (err) {
         setError(err.message || "Failed to fetch projects.");
-        setProjects([]);
-        setTableRows([]);
       } finally {
         setLoading(false);
       }
     };
 
     load();
-  }, [isAdmin, isSalesman]);
-
-  // Its Dammy data fetch
-  // useEffect(() => {
-  //   const load = async () => {
-  //     setLoading(true);
-  //     setError(null);
-
-  //     try {
-  //       let realProjects = [];
-  //       let dummy = dammyProjects.map(normalizeAdminProject);
-
-  //       if (isAdmin) {
-  //         const raw = await adminService.getProjects();
-  //         realProjects = Array.isArray(raw)
-  //           ? raw.map(normalizeAdminProject)
-  //           : [];
-  //       } else {
-  //         const storedUser = localStorage.getItem("user");
-  //         if (!storedUser) throw new Error("User not logged in.");
-
-  //         const user = JSON.parse(storedUser);
-
-  //         console.log("Logged user:", user); // ✅ DEBUG
-
-  //         const data = await projectService.getProjects(
-  //           user.user_email,
-  //           user.user_type,
-  //           user.user_id, // ✅ FIX HERE
-  //         );
-
-  //         realProjects =
-  //           data.success && Array.isArray(data.data) ? data.data : [];
-  //       }
-
-  //       const updatedRealProjects = realProjects.map((proj) => ({
-  //         ...proj,
-  //         project_name:
-  //           proj.project_name === "D25-Phase 2-Demo"
-  //             ? "District 25 Phase 2"
-  //             : proj.project_name,
-  //       }));
-
-  //       const merged = [...updatedRealProjects, ...dummy];
-
-  //       setProjects(merged);
-  //       setTableRows(merged);
-
-  //       if (realProjects.length > 0) {
-  //         setFilters((prev) => ({
-  //           ...prev,
-  //           project: "District 25 Phase 2",
-  //         }));
-  //       }
-  //     } catch (err) {
-  //       setError(err.message || "Failed to fetch projects.");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   load();
-  // }, [isAdmin]);
-
+  }, [isAdmin, isSalesman]); // ✅ added isSalesman
   const adminProjectOptions = [
     ...new Set(
       projects
@@ -335,14 +352,14 @@ export default function ProjectFilter() {
 
   // Its Real data
 
-  const projectOptions = [
-    ...new Set(projects.map((p) => p.project_name).filter(Boolean)),
-  ];
-
-  // Its Dammy data
   // const projectOptions = [
   //   ...new Set(projects.map((p) => p.project_name).filter(Boolean)),
   // ];
+
+  // Its Dammy data
+  const projectOptions = [
+    ...new Set(projects.map((p) => p.project_name).filter(Boolean)),
+  ];
 
   const towerOptions = [
     ...new Set(
@@ -510,22 +527,25 @@ export default function ProjectFilter() {
     </div>
   );
 
-  const enrichedRows = tableRows.map((row, idx) => ({
-    ...row,
-    appartment_available: getApartmentStatusLabel(row.appartment_available),
+  const enrichedRows = tableRows.map((row, idx) => {
+    const statusLabel = getApartmentStatusLabel(row.appartment_available);
 
-    rowClassName: showAvailabilityColors
-      ? getRowClassName(row.appartment_available)
-      : "",
-
-    action: (
-      <ActionCell
-        status={getApartmentStatusLabel(row.appartment_available)}
-        onView={() => console.log("View", row)}
-        onChange={(newStatus) => handleStatusChange(idx, newStatus)}
-      />
-    ),
-  }));
+    return {
+      ...row,
+      appartment_available: statusLabel,
+      rowClassName:
+        !isSalesman && showAvailabilityColors
+          ? getRowClassName(statusLabel)
+          : "",
+      action: (
+        <ActionCell
+          status={statusLabel}
+          onView={() => console.log("View", row)}
+          onChange={(newStatus) => handleStatusChange(idx, newStatus)}
+        />
+      ),
+    };
+  });
 
   const getExportFileName = () => {
     const parts = [];
@@ -592,16 +612,18 @@ export default function ProjectFilter() {
         )}
       </div>
 
-      <div className="availability-toggle">
-        <label>
-          <input
-            type="checkbox"
-            checked={showAvailabilityColors}
-            onChange={() => setShowAvailabilityColors((prev) => !prev)}
-          />
-          Show Availability Colors
-        </label>
-      </div>
+      {!isSalesman && (
+        <div className="availability-toggle">
+          <label>
+            <input
+              type="checkbox"
+              checked={showAvailabilityColors}
+              onChange={() => setShowAvailabilityColors((prev) => !prev)}
+            />
+            Show Availability Colors
+          </label>
+        </div>
+      )}
 
       {loading ? (
         <p className="project-filter__loading">Loading…</p>

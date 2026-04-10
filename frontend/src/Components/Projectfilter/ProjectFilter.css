@@ -181,10 +181,10 @@
 
 .project-filter__table-wrapper th {
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: #000000;
   background: var(--surface-hover);
 }
 

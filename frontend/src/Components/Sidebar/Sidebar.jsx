@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { MdChevronRight, MdOutlinePerson } from "react-icons/md";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { LuLayoutList, LuFilter } from "react-icons/lu";
+import { MdDashboard } from "react-icons/md";
 import { LuDownload } from "react-icons/lu";
 import meraaquii from "../../assets/Logo.png";
 import smallLogo from "../../../public/fav-icon.jpg";
@@ -35,6 +36,13 @@ const MENU_CONFIG = {
   ],
 
   C: [
+    {
+      id: "dashboard",
+      name: "Dashboard",
+      icon: <MdDashboard className="nav-icons" />,
+      path: "/dashboard",
+      type: "link",
+    },
     {
       id: "device-list",
       name: "Device List",
@@ -197,7 +205,7 @@ const DropdownMenuItem = ({
   );
 };
 
-const Sidebar = ({ isVisible, onToggle }) => {
+const Sidebar = ({ isVisible, onToggle, blur = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -234,6 +242,7 @@ const Sidebar = ({ isVisible, onToggle }) => {
 
   const sidebarClass = [
     "sidebar",
+    blur ? "sidebar--blurred" : "",
     isMobile
       ? isVisible
         ? "sidebar-mobile-open"

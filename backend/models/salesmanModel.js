@@ -101,14 +101,14 @@ const addSalesman = async (salesmanData) => {
 
 // UPDATE
 const updateSalesman = async (id, salesmanData) => {
-  if (!salesmanData) {
-    throw new Error("No data provided");
-  }
-
   const { salesman_name, salesman_phone_no, salesman_email } = salesmanData;
 
+  if (!salesman_name || !salesman_phone_no || !salesman_email) {
+    throw new Error("All fields are required");
+  }
+
   const [existing] = await db.query(
-    "SELECT * FROM mr_salesman WHERE salesman_id = ?",
+    "SELECT salesman_id FROM mr_salesman WHERE salesman_id = ?",
     [id],
   );
 
@@ -116,29 +116,20 @@ const updateSalesman = async (id, salesmanData) => {
     return 0;
   }
 
-  const current = existing[0];
+  const [duplicate] = await db.query(
+    "SELECT salesman_id FROM mr_salesman WHERE salesman_email = ? AND salesman_id != ?",
+    [salesman_email, id],
+  );
 
-  const newName = salesman_name || current.salesman_name;
-  const newPhone = salesman_phone_no || current.salesman_phone_no;
-  const newEmail = salesman_email || current.salesman_email;
-
-  // check duplicate email only if changed
-  if (salesman_email) {
-    const [duplicate] = await db.query(
-      "SELECT salesman_id FROM mr_salesman WHERE salesman_email = ? AND salesman_id != ?",
-      [salesman_email, id],
-    );
-
-    if (duplicate.length > 0) {
-      throw new Error("Email already exists");
-    }
+  if (duplicate.length > 0) {
+    throw new Error("Email already exists");
   }
 
   const [result] = await db.query(
     `UPDATE mr_salesman 
      SET salesman_name = ?, salesman_phone_no = ?, salesman_email = ?
      WHERE salesman_id = ?`,
-    [newName, newPhone, newEmail, id],
+    [salesman_name, salesman_phone_no, salesman_email, id],
   );
 
   return result.affectedRows;

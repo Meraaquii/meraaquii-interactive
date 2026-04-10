@@ -8,6 +8,7 @@ import ProjectFilter from "./Components/Projectfilter/Projectfilter";
 import ClientList from "./Components/ClientList/ClientList";
 import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
 import CustomerList from "./Components/Salesmanlist/CustomerList/CustomerList";
+import ClientDashboard from "./Components/ClientDashboard/ClientDashboard";
 
 export default function App() {
   return (
@@ -28,7 +29,7 @@ export default function App() {
       {/*Client (user_type = "C")*/}
       <Route element={<ProtectedRoute role="C" />}>
         <Route path="/dashboard/*" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="device-list" replace />} />
+          <Route index element={<ClientDashboard />} />
           <Route path="device-list" element={<DeviceList />} />
           <Route path="salesman-list" element={<SalesmanList />} />
           <Route path="project-filter" element={<ProjectFilter />} />

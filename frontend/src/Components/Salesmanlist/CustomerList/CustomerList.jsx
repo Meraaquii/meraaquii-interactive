@@ -9,6 +9,7 @@ import {
   updateCustomerData,
 } from "../../../controllers/customersController";
 import CustomerModal from "../CustomerList/CustomerModal/CustomerModal";
+import { useLayout } from "../../Dashboardlayout/Dashboardlayout";
 import toast from "react-hot-toast";
 
 function CustomerList() {
@@ -23,6 +24,7 @@ function CustomerList() {
   });
 
   const user = JSON.parse(localStorage.getItem("user"));
+  const { setSidebarBlur } = useLayout() ?? {};
 
   useEffect(() => {
     if (user?.user_id) {
@@ -39,6 +41,7 @@ function CustomerList() {
       customer_address: row.address,
     });
     setIsEditOpen(true);
+    setSidebarBlur?.(true); // Blur sidebar when modal opens
   };
 
   const handleChange = (e) => {
@@ -64,6 +67,7 @@ function CustomerList() {
       await updateCustomerData(selectedCustomer.id, formData);
       toast.success("Customer updated successfully");
       setIsEditOpen(false);
+      setSidebarBlur?.(false); // Remove blur when modal closes
       getCustomerData(setRows, user.user_id);
     } catch (error) {
       console.error("Update failed:", error.message);
@@ -113,7 +117,10 @@ function CustomerList() {
 
       <CustomerModal
         isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
+        onClose={() => {
+          setIsEditOpen(false);
+          setSidebarBlur?.(false); // Remove blur when modal closes
+        }}
         formData={formData}
         handleChange={handleChange}
         handleUpdate={handleUpdate}

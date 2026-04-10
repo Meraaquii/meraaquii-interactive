@@ -9,6 +9,7 @@ const projectRoutes = require("./routes/projectRoutes.js");
 const adminRoutes = require("./routes/adminRoutes.js");
 const salesmanRoutes = require("./routes/salesmanRoutes.js");
 const customerRoutes = require("./routes/customerRoutes.js");
+const clientDashboardRoutes = require("./routes/clientDashboardRoutes.js");
 
 dotenv.config();
 const BASE_URL = "/v1/api";
@@ -29,6 +30,7 @@ app.use(`${BASE_URL}/project`, projectRoutes);
 app.use(`${BASE_URL}/admin`, adminRoutes);
 app.use(`${BASE_URL}/salesman`, salesmanRoutes);
 app.use(`${BASE_URL}/customer`, customerRoutes);
+app.use(`${BASE_URL}/dashboard`, clientDashboardRoutes);
 
 const PORT = 5500;
 app.listen(PORT, () => {
