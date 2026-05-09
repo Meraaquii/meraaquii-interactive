@@ -1,16 +1,22 @@
 import { useEffect, useState, useCallback } from "react";
 import ExportButton from "../ExportButton/ExportButton";
 import { getDeviceData } from "../../controllers/deviceController";
+import { getSalesmanData } from "../../controllers/salesmanController";
 import adminService from "../../services/Adminservice";
 import { TbEdit } from "react-icons/tb";
+import { IoPersonAddOutline } from "react-icons/io5";
 import Table from "../Table/Table";
 import "./Devicelist.css";
 import UpdateDeviceModal from "../Devicelist/UpdateDeviceModal/UpdateDeviceModal";
+import AddSalesman from "../Salesmanlist/AddSalesman/AddSalesman";
 import { useLayout } from "../Dashboardlayout/Dashboardlayout";
 
 const DEVICELIST_COLUMNS = [
-  { key: "deviceName", label: "Device Name" },
-  { key: "devicePassword", label: "Device Password" },
+  { key: "name", label: "Name" },
+  { key: "phone", label: "Phone" },
+  // { key: "email", label: "Email" },
+  { key: "deviceName", label: "Login Id" },
+  { key: "devicePassword", label: "Login Password" },
   { key: "deviceOculasAuthId", label: "Oculas Auth ID" },
   { key: "deviceStatus", label: "Status" },
   { key: "action", label: "Action" },
@@ -19,10 +25,15 @@ const DEVICELIST_COLUMNS = [
 export default function DeviceList() {
   const [rows, setRows] = useState([]);
   const [rawDevices, setRawDevices] = useState([]);
+  const [salesmanRows, setSalesmanRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState(null);
+
+  const [showAddSalesman, setShowAddSalesman] = useState(false);
+
   const { setSidebarBlur } = useLayout() ?? {};
 
   const user = JSON.parse(localStorage.getItem("user") ?? "{}");
@@ -30,18 +41,24 @@ export default function DeviceList() {
   const clientId = user?.client_id;
   const isAdmin = userType === "A";
 
+  const loadSalesmanData = useCallback(() => {
+    if (clientId) {
+      getSalesmanData(setSalesmanRows, clientId);
+    }
+  }, [clientId]);
+
+  useEffect(() => {
+    loadSalesmanData();
+  }, [loadSalesmanData]);
+
   const handleEdit = useCallback(
     (device) => {
-      const fullDevice = {
+      setSelectedDevice({
         ...device,
         clientId: device.client_id ?? device.clientId ?? null,
-      };
-      console.log("DEVICE FOR MODAL:", fullDevice);
-      console.log("RAW DEVICE:", JSON.stringify(device));
-      setSelectedDevice(fullDevice);
+      });
       setIsModalOpen(true);
-      setSidebarBlur?.(true); // Blur sidebar when modal opens
-      console.log("[DeviceList] Sidebar blur set to TRUE");
+      setSidebarBlur?.(true);
     },
     [setSidebarBlur],
   );
@@ -58,28 +75,36 @@ export default function DeviceList() {
   };
 
   const normalizeDevice = useCallback(
-    (rawDevice) => ({
-      deviceName: rawDevice.device_name ?? rawDevice.deviceName ?? "—",
-      devicePassword:
-        rawDevice.device_password ?? rawDevice.devicePassword ?? "—",
-      deviceOculasAuthId:
-        rawDevice.oculas_auth_id ?? rawDevice.deviceOculasAuthId ?? "—",
-      deviceStatus: getStatusLabel(
-        rawDevice.device_status ?? rawDevice.deviceStatus,
-      ),
-      action: (
-        <button
-          className="edit-btn"
-          onClick={() => handleEdit(rawDevice)}
-          title="Edit Device"
-        >
-          <TbEdit size={22} />
-        </button>
-      ),
-    }),
-    [handleEdit],
+    (rawDevice) => {
+      const salesman = salesmanRows.find(
+        (s) => s.id === (rawDevice.salesman_id ?? rawDevice.salesmanId),
+      );
+
+      return {
+        name: salesman?.name ?? "—",
+        phone: salesman?.phone ?? "—",
+        // email: salesman?.email ?? "—",
+        deviceName: rawDevice.device_name ?? rawDevice.deviceName ?? "—",
+        devicePassword:
+          rawDevice.device_password ?? rawDevice.devicePassword ?? "—",
+        deviceOculasAuthId:
+          rawDevice.oculas_auth_id ?? rawDevice.deviceOculasAuthId ?? "—",
+        deviceStatus: getStatusLabel(
+          rawDevice.device_status ?? rawDevice.deviceStatus,
+        ),
+        action: (
+          <button
+            className="edit-btn"
+            onClick={() => handleEdit(rawDevice)}
+            title="Edit Device"
+          >
+            <TbEdit size={22} />
+          </button>
+        ),
+      };
+    },
+    [salesmanRows, handleEdit],
   );
-  console.log("clientId:", clientId, "user:", user);
 
   useEffect(() => {
     if (isAdmin) {
@@ -97,14 +122,12 @@ export default function DeviceList() {
         setLoading(false);
         return;
       }
-
       getDeviceData((data) => {
         if (!data || data.length === 0) {
           setError("No devices found for this account.");
           setLoading(false);
           return;
         }
-        console.log("Raw devices received in component:", data);
         setRawDevices(data);
         setRows(data.map(normalizeDevice));
         setLoading(false);
@@ -116,22 +139,24 @@ export default function DeviceList() {
     }
   }, [isAdmin, clientId, normalizeDevice]);
 
+  useEffect(() => {
+    if (rawDevices.length > 0) {
+      setRows(rawDevices.map(normalizeDevice));
+    }
+  }, [salesmanRows, rawDevices, normalizeDevice]);
+
   const handleModalSubmit = useCallback(
     (updatedData) => {
-      console.log("Updated:", updatedData);
-
       const updatedList = rawDevices.map((d) =>
-        (d.device_id || d.id) ===
-        (selectedDevice?.device_id || selectedDevice?.id)
+        (d.device_id ?? d.id) ===
+        (selectedDevice?.device_id ?? selectedDevice?.id)
           ? { ...d, ...updatedData }
           : d,
       );
-
       setRawDevices(updatedList);
       setRows(updatedList.map(normalizeDevice));
       setIsModalOpen(false);
       setSidebarBlur?.(false);
-      console.log("[DeviceList] Sidebar blur set to FALSE (submit)");
     },
     [rawDevices, selectedDevice, normalizeDevice, setSidebarBlur],
   );
@@ -139,18 +164,36 @@ export default function DeviceList() {
   const handleModalClose = useCallback(() => {
     setIsModalOpen(false);
     setSidebarBlur?.(false);
-    console.log("[DeviceList] Sidebar blur set to FALSE (close)");
   }, [setSidebarBlur]);
+
+  const handleOpenAddSalesman = () => {
+    setShowAddSalesman(true);
+    setSidebarBlur?.(true);
+  };
+
+  const handleCloseAddSalesman = () => {
+    setShowAddSalesman(false);
+    setSidebarBlur?.(false);
+  };
 
   return (
     <div className="device-list">
       <div className="device-list__header">
-        <h2 className="device-list__title">Device List</h2>
-        <ExportButton
-          data={rows}
-          columns={DEVICELIST_COLUMNS}
-          filename="devices"
-        />
+        <h2 className="device-list__title">User List</h2>
+        <div className="device-list__actions">
+          <ExportButton
+            data={rows}
+            columns={DEVICELIST_COLUMNS}
+            filename="devices"
+          />
+          <button
+            className="salesman-list__add-btn"
+            onClick={handleOpenAddSalesman}
+          >
+            <IoPersonAddOutline size={16} />
+            Add
+          </button>
+        </div>
       </div>
 
       {error && <p className="device-list__error">{error}</p>}
@@ -161,12 +204,22 @@ export default function DeviceList() {
         <Table rows={rows} columns={DEVICELIST_COLUMNS} />
       )}
 
+      {/* Device edit modal */}
       <UpdateDeviceModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
         device={selectedDevice}
         onSubmit={handleModalSubmit}
       />
+
+      {/* Add Salesman modal */}
+      {showAddSalesman && (
+        <AddSalesman
+          onClose={handleCloseAddSalesman}
+          clientId={clientId}
+          refreshData={loadSalesmanData}
+        />
+      )}
     </div>
   );
 }

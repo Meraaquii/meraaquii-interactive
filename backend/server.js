@@ -10,6 +10,9 @@ const adminRoutes = require("./routes/adminRoutes.js");
 const salesmanRoutes = require("./routes/salesmanRoutes.js");
 const customerRoutes = require("./routes/customerRoutes.js");
 const clientDashboardRoutes = require("./routes/clientDashboardRoutes.js");
+const analyticsRoutes = require("./routes/analyticsRoutes.js");
+const teamRoutes = require("./routes/teamRoute.js");
+const salespersonRoute = require("./routes/salespersonRoute.js");
 
 dotenv.config();
 const BASE_URL = "/v1/api";
@@ -31,6 +34,9 @@ app.use(`${BASE_URL}/admin`, adminRoutes);
 app.use(`${BASE_URL}/salesman`, salesmanRoutes);
 app.use(`${BASE_URL}/customer`, customerRoutes);
 app.use(`${BASE_URL}/dashboard`, clientDashboardRoutes);
+app.use(`${BASE_URL}/analytics`, analyticsRoutes);
+app.use(`${BASE_URL}/teams`, teamRoutes);
+app.use(`${BASE_URL}/salesperson`, salespersonRoute);
 
 const PORT = 5500;
 app.listen(PORT, () => {

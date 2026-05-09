@@ -66,10 +66,29 @@ const activateUser = async (email) => {
   return result.affectedRows;
 };
 
+// Change password by user_id
+const changePassword = async (userId, newHashedPassword) => {
+  const [result] = await pool.query(
+    "UPDATE admin_user SET user_password = ? WHERE user_id = ?",
+    [newHashedPassword, userId],
+  );
+  return result.affectedRows;
+};
+
+// Change email by user_id
+const changeEmail = async (userId, newEmail) => {
+  const [result] = await pool.query(
+    "UPDATE admin_user SET user_email = ? WHERE user_id = ?",
+    [newEmail, userId],
+  );
+  return result.affectedRows;
+};
+
 module.exports = {
   findUserByEmail,
   createUser,
   activateUser,
   findClientIdByEmail,
-  //findSalesmanIdByEmail,
+  changePassword,
+  changeEmail,
 };

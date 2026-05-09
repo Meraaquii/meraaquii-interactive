@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { IoEyeOutline } from "react-icons/io5";
 import Table from "../Table/Table";
 import ExportButton from "../ExportButton/ExportButton";
 import projectService from "../../services/projectService";
@@ -19,73 +18,32 @@ const ADMIN_COLUMNS = [
 ];
 
 const CLIENT_COLUMNS = [
-  {
-    key: "project_name",
-    label: "Project Name",
-    width: "100px",
-  },
-  {
-    key: "tower_name",
-    label: "Tower",
-    width: "110px",
-  },
-  {
-    key: "floor_name",
-    label: "Floor",
-    width: "110px",
-  },
-  {
-    key: "apartment_name",
-    label: "Unit Number",
-    width: "110px",
-  },
-  {
-    key: "flat_type_name",
-    label: "Type of Unit",
-    width: "110px",
-  },
-  {
-    key: "appartment_available",
-    label: "Availability",
-    width: "110px",
-  },
-  {
-    key: "action",
-    label: "Action",
-    width: "100px",
-  },
+  { key: "project_name", label: "Project Name", width: "100px" },
+  { key: "tower_name", label: "Tower", width: "110px" },
+  { key: "floor_name", label: "Floor", width: "110px" },
+  { key: "apartment_name", label: "Unit Number", width: "110px" },
+  { key: "flat_type_name", label: "Type of Unit", width: "110px" },
+  { key: "appartment_available", label: "Availability", width: "110px" },
+  { key: "action", label: "Action", width: "100px" },
 ];
 
 const SALESMAN_COLUMNS = [
   { key: "project_name", label: "Project Name", width: "110px" },
-
-  {
-    key: "tower_name",
-    label: "Tower",
-    width: "110px",
-  },
-  {
-    key: "floor_name",
-    label: "Floor",
-    width: "110px",
-  },
-  {
-    key: "apartment_name",
-    label: "Unit Number",
-    width: "110px",
-  },
-  {
-    key: "flat_type_name",
-    label: "Type of Unit",
-    width: "110px",
-  },
+  { key: "tower_name", label: "Tower", width: "110px" },
+  { key: "floor_name", label: "Floor", width: "110px" },
+  { key: "apartment_name", label: "Unit Number", width: "110px" },
+  { key: "flat_type_name", label: "Type of Unit", width: "110px" },
 ];
 
-const statusToCode = {
-  Available: "Y",
-  Reserve: "R",
-  Booked: "N",
-};
+// ─── Parse user ONCE outside the component ─────────────────────────────────
+function getStoredUser() {
+  try {
+    const raw = localStorage.getItem("user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 function normalizeAdminProject(p) {
   return {
@@ -97,7 +55,7 @@ function normalizeAdminProject(p) {
   };
 }
 
-function ActionCell({ status = "", onView, onChange }) {
+function ActionCell({ status = "", onChange }) {
   const statuses = ["Reserve", "Available", "Booked"];
   const active = statuses.find(
     (s) => s.toLowerCase() === (status || "").toLowerCase(),
@@ -116,61 +74,34 @@ function ActionCell({ status = "", onView, onChange }) {
           <span className="action-cell__label">{s}</span>
         </label>
       ))}
-      {/* <button
-        type="button"
-        className="action-cell__view-btn"
-        onClick={onView}
-        title="View details"
-        aria-label="View details"
-      >
-        <IoEyeOutline />
-      </button> */}
     </div>
   );
 }
 
+const STATUS_CODE_TO_LABEL = { Y: "Available", R: "Reserve", N: "Booked" };
+const STATUS_LABEL_TO_CODE = { Available: "Y", Reserve: "R", Booked: "N" };
+
+function getApartmentStatusLabel(code) {
+  return STATUS_CODE_TO_LABEL[code] ?? code ?? "—";
+}
+
+function getRowClassName(label) {
+  switch (label) {
+    case "Available":
+      return "row--available";
+    case "Booked":
+      return "row--booked";
+    case "Reserve":
+      return "row--reserve";
+    default:
+      return "";
+  }
+}
+
 export default function ProjectFilter() {
-  const [filters, setFilters] = useState({
-    project: "",
-    tower: "",
-    floor: "",
-    apartment: "",
-  });
-
-  const [projects, setProjects] = useState([]);
-  const [tableRows, setTableRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingChange, setPendingChange] = useState(null);
-  const [showAvailabilityColors, setShowAvailabilityColors] = useState(true);
-
-  const dammyProjects = [
-    {
-      project_name: "District 25 Phase 3",
-      client_name: "Client X",
-      status: "Available",
-      created_at: "2024-01-01",
-    },
-
-    {
-      project_name: "Millenia",
-      client_name: "Client Y",
-      status: "Booked",
-      created_at: "2024-02-01",
-    },
-
-    {
-      project_name: "Ellegenza",
-      client_name: "Client Z",
-      status: "Reserve",
-      created_at: "2024-03-01",
-    },
-  ];
-
-  const storedUser = localStorage.getItem("user");
-  const user = storedUser ? JSON.parse(storedUser) : null;
-  const userType = user?.user_type;
+  // ── Read user data once; stable across renders ──────────────────────────
+  const user = useMemo(() => getStoredUser(), []);
+  const userType = user?.user_type ?? "";
   const isAdmin = userType === "A";
   const isSalesman = userType === "S";
 
@@ -180,111 +111,52 @@ export default function ProjectFilter() {
       ? SALESMAN_COLUMNS
       : CLIENT_COLUMNS;
 
-  const getApartmentStatusLabel = (status) => {
-    switch (status) {
-      case "Y":
-        return "Available";
-      case "R":
-        return "Reserve";
-      case "N":
-        return "Booked";
-      default:
-        return status || "—";
-    }
-  };
+  // ── State ─────────────────────────────────────────────────────────────────
+  const [filters, setFilters] = useState({
+    project: "",
+    tower: "",
+    floor: "",
+    apartment: "",
+  });
+  const [projects, setProjects] = useState([]);
+  const [allProjectNames, setAllProjectNames] = useState([]); // ALL project names including those with no apartments
+  const [tableRows, setTableRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingChange, setPendingChange] = useState(null);
+  const [showAvailabilityColors, setShowAvailabilityColors] = useState(true);
 
-  const getRowClassName = (status) => {
-    const label = getApartmentStatusLabel(status);
-
-    switch (label) {
-      case "Available":
-        return "row--available";
-      case "Booked":
-        return "row--booked";
-      case "Reserve":
-        return "row--reserve";
-      default:
-        return "";
-    }
-  };
-
-  // Its Real data fetch
-
-  // useEffect(() => {
-  //   const load = async () => {
-  //     setLoading(true);
-  //     setError(null);
-
-  //     try {
-  //       let list = [];
-
-  //       if (isAdmin) {
-  //         const raw = await adminService.getProjects();
-  //         list = Array.isArray(raw) ? raw.map(normalizeAdminProject) : [];
-  //       } else if (isSalesman) {
-  //         const user_id = user?.user_id;
-  //         if (!user_id) throw new Error("user_id missing for salesman.");
-
-  //         const data = await fetchSalesman({ user_type: "S", user_id });
-
-  //         list = Array.isArray(data)
-  //           ? data.map((item) => ({
-  //               project_name: item.project_name || "—",
-  //               tower_name: item.tower_name || "—",
-  //               floor_name: item.floor_name || "—",
-  //               apartment_name: item.apartment_name || "—",
-  //               flat_type_name: item.flat_type_name || "—",
-  //               appartment_available: item.appartment_available || "Y",
-  //               apart_id: item.apart_id || null,
-  //             }))
-  //           : [];
-  //       } else {
-  //         // Client view (optional)
-  //         const data = await projectService.getProjects(
-  //           user?.user_email,
-  //           user?.user_type,
-  //         );
-  //         list = data.success && Array.isArray(data.data) ? data.data : [];
-  //       }
-
-  //       setProjects(list);
-  //       setTableRows(list);
-  //     } catch (err) {
-  //       setError(err.message || "Failed to fetch projects.");
-  //       setProjects([]);
-  //       setTableRows([]);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   load();
-  // }, [isAdmin, isSalesman]);
-
-  // Its Dammy data fetch
-  // Its Dammy data fetch
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
       setLoading(true);
       setError(null);
 
+      console.log("=== LOAD CALLED ===", {
+        userType,
+        user_id: user?.user_id,
+        isAdmin,
+        isSalesman,
+      });
+
       try {
-        let realProjects = [];
-        let dummy = dammyProjects.map(normalizeAdminProject);
+        let list = [];
 
         if (isAdmin) {
           const raw = await adminService.getProjects();
-          realProjects = Array.isArray(raw)
-            ? raw.map(normalizeAdminProject)
-            : [];
+          list = Array.isArray(raw) ? raw.map(normalizeAdminProject) : [];
+          if (!cancelled)
+            setAllProjectNames([
+              ...new Set(list.map((p) => p.project_name).filter(Boolean)),
+            ]);
         } else if (isSalesman) {
-          // ✅ ADD THIS BLOCK
           const user_id = user?.user_id;
           if (!user_id) throw new Error("user_id missing for salesman.");
 
           const data = await fetchSalesman({ user_type: "S", user_id });
-
-          realProjects = Array.isArray(data)
+          list = Array.isArray(data)
             ? data.map((item) => ({
                 project_name: item.project_name || "—",
                 tower_name: item.tower_name || "—",
@@ -295,105 +167,125 @@ export default function ProjectFilter() {
                 apart_id: item.apart_id || null,
               }))
             : [];
+          if (!cancelled)
+            setAllProjectNames([
+              ...new Set(list.map((p) => p.project_name).filter(Boolean)),
+            ]);
         } else {
-          // Client view
-          const storedUser = localStorage.getItem("user");
-          if (!storedUser) throw new Error("User not logged in.");
+          const client_id = user?.client_id;
+          if (!client_id) throw new Error("client_id missing for client.");
 
-          const parsedUser = JSON.parse(storedUser);
-
-          const data = await projectService.getProjects(
-            parsedUser.user_email,
-            parsedUser.user_type,
-            parsedUser.user_id,
+          const response = await projectService.getProjects(
+            client_id,
+            userType,
           );
 
-          realProjects =
-            data.success && Array.isArray(data.data) ? data.data : [];
+          console.log("Client raw response:", response);
+
+          const rawArray =
+            response?.success && Array.isArray(response.data)
+              ? response.data
+              : Array.isArray(response)
+                ? response
+                : [];
+
+          console.log("Client rawArray length:", rawArray.length);
+
+          const uniqueProjectNames = [
+            ...new Set(
+              rawArray.map((item) => item.project_name).filter(Boolean),
+            ),
+          ];
+
+          if (!cancelled) setAllProjectNames(uniqueProjectNames);
+
+          list = rawArray
+            .filter((item) => item.apart_id != null)
+            .map((item) => ({
+              project_name: item.project_name || "—",
+              client_name: item.client_name || "—",
+              tower_name: item.tower_name || "—",
+              floor_name: item.floor_name || "—",
+              floor_id: item.floor_id ?? null,
+              apart_id: item.apart_id ?? null,
+              apartment_name: item.apartment_name || "—",
+              appartment_available: item.appartment_available ?? "Y",
+              flat_type_name: item.flat_type_name || "—",
+            }));
+
+          console.log("Client normalised list length:", list.length);
+          if (list.length > 0) console.log("Sample row:", list[0]);
         }
 
-        const updatedRealProjects = realProjects.map((proj) => ({
-          ...proj,
-          project_name:
-            proj.project_name === "D25-Phase 2-Demo"
-              ? "District 25 Phase 2"
-              : proj.project_name,
-        }));
-
-        const merged = [...updatedRealProjects, ...dummy];
-
-        setProjects(merged);
-        setTableRows(merged);
-
-        if (realProjects.length > 0) {
-          setFilters((prev) => ({
-            ...prev,
-            project: isSalesman
-              ? realProjects[0].project_name
-              : "District 25 Phase 2", // ✅ salesman-safe default
-          }));
+        if (!cancelled) {
+          setProjects(list);
+          setTableRows(list);
+          console.log("=== DONE — projects set:", list.length, "rows ===");
         }
       } catch (err) {
-        setError(err.message || "Failed to fetch projects.");
+        console.error("=== FETCH ERROR ===", err);
+        if (!cancelled) {
+          setError(err.message || "Failed to fetch projects.");
+          setProjects([]);
+          setTableRows([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     load();
-  }, [isAdmin, isSalesman]); // ✅ added isSalesman
-  const adminProjectOptions = [
-    ...new Set(
-      projects
-        .map((p) => p.project_name)
-        .filter((v) => v !== "—" && Boolean(v)),
-    ),
-  ];
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin, isSalesman, user?.user_id]);
 
-  // Its Real data
+  const projectOptions = useMemo(() => allProjectNames, [allProjectNames]);
 
-  // const projectOptions = [
-  //   ...new Set(projects.map((p) => p.project_name).filter(Boolean)),
-  // ];
+  const towerOptions = useMemo(
+    () => [
+      ...new Set(
+        projects
+          .filter((p) => !filters.project || p.project_name === filters.project)
+          .map((p) => p.tower_name)
+          .filter(Boolean),
+      ),
+    ],
+    [projects, filters.project],
+  );
 
-  // Its Dammy data
-  const projectOptions = [
-    ...new Set(projects.map((p) => p.project_name).filter(Boolean)),
-  ];
+  const floorOptions = useMemo(
+    () => [
+      ...new Set(
+        projects
+          .filter(
+            (p) =>
+              (!filters.project || p.project_name === filters.project) &&
+              (!filters.tower || p.tower_name === filters.tower),
+          )
+          .map((p) => p.floor_name)
+          .filter(Boolean),
+      ),
+    ],
+    [projects, filters.project, filters.tower],
+  );
 
-  const towerOptions = [
-    ...new Set(
-      projects
-        .filter((p) => !filters.project || p.project_name === filters.project)
-        .map((p) => p.tower_name)
-        .filter(Boolean),
-    ),
-  ];
-  const floorOptions = [
-    ...new Set(
-      projects
-        .filter(
-          (p) =>
-            (!filters.project || p.project_name === filters.project) &&
-            (!filters.tower || p.tower_name === filters.tower),
-        )
-        .map((p) => p.floor_name)
-        .filter(Boolean),
-    ),
-  ];
-  const apartmentOptions = [
-    ...new Set(
-      projects
-        .filter(
-          (p) =>
-            (!filters.project || p.project_name === filters.project) &&
-            (!filters.tower || p.tower_name === filters.tower) &&
-            (!filters.floor || p.floor_name === filters.floor),
-        )
-        .map((p) => p.apartment_name)
-        .filter(Boolean),
-    ),
-  ];
+  const apartmentOptions = useMemo(
+    () => [
+      ...new Set(
+        projects
+          .filter(
+            (p) =>
+              (!filters.project || p.project_name === filters.project) &&
+              (!filters.tower || p.tower_name === filters.tower) &&
+              (!filters.floor || p.floor_name === filters.floor),
+          )
+          .map((p) => p.apartment_name)
+          .filter(Boolean),
+      ),
+    ],
+    [projects, filters.project, filters.tower, filters.floor],
+  );
 
   useEffect(() => {
     let filtered = [...projects];
@@ -420,38 +312,37 @@ export default function ProjectFilter() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => {
-      const updated = { ...prev, [name]: value };
+      const next = { ...prev, [name]: value };
       if (name === "project") {
-        updated.tower = "";
-        updated.floor = "";
-        updated.apartment = "";
+        next.tower = "";
+        next.floor = "";
+        next.apartment = "";
       } else if (name === "tower") {
-        updated.floor = "";
-        updated.apartment = "";
+        next.floor = "";
+        next.apartment = "";
       } else if (name === "floor") {
-        updated.apartment = "";
+        next.apartment = "";
       }
-      return updated;
+      return next;
     });
   };
 
   const handleStatusChange = (rowIndex, newStatus) => {
     const row = tableRows[rowIndex];
+    console.log("Status change →", {
+      rowIndex,
+      apart_id: row?.apart_id,
+      newStatus,
+    });
     setPendingChange({ row, newStatus });
     setConfirmOpen(true);
-
-    console.log("Changing status for row index:", rowIndex);
-    console.log("Apartment ID:", row.apart_id);
-    console.log("Old status:", row.appartment_available);
-    console.log("New status (label):", newStatus);
   };
 
   const confirmStatusUpdate = async () => {
     if (!pendingChange) return;
-
     const { row, newStatus } = pendingChange;
 
-    if (!row.apart_id) {
+    if (!row?.apart_id) {
       toast.error("Apartment ID missing. Cannot update.");
       setConfirmOpen(false);
       setPendingChange(null);
@@ -464,29 +355,19 @@ export default function ProjectFilter() {
         status: newStatus,
       });
 
-      console.log("API Response:", response);
-
-      if (response.message) {
+      if (response?.message) {
         toast.success(response.message || "Status updated successfully");
 
-        const codeMap = { Available: "Y", Reserve: "R", Booked: "N" };
-        const newCode = codeMap[newStatus];
+        const newCode = STATUS_LABEL_TO_CODE[newStatus];
 
-        setProjects((prev) =>
+        const updater = (prev) =>
           prev.map((r) =>
             r.apart_id === row.apart_id
               ? { ...r, appartment_available: newCode }
               : r,
-          ),
-        );
-
-        setTableRows((prev) =>
-          prev.map((r) =>
-            r.apart_id === row.apart_id
-              ? { ...r, appartment_available: newCode }
-              : r,
-          ),
-        );
+          );
+        setProjects(updater);
+        setTableRows(updater);
       } else {
         toast.error("Update failed.");
       }
@@ -497,6 +378,40 @@ export default function ProjectFilter() {
       setConfirmOpen(false);
       setPendingChange(null);
     }
+  };
+
+  const enrichedRows = useMemo(
+    () =>
+      tableRows.map((row, idx) => {
+        // For admin rows there is no appartment_available field
+        const rawCode = row.appartment_available;
+        const statusLabel = getApartmentStatusLabel(rawCode);
+
+        return {
+          ...row,
+          appartment_available: statusLabel,
+          rowClassName:
+            !isSalesman && showAvailabilityColors
+              ? getRowClassName(statusLabel)
+              : "",
+          action: (
+            <ActionCell
+              status={statusLabel}
+              onChange={(newStatus) => handleStatusChange(idx, newStatus)}
+            />
+          ),
+        };
+      }),
+    [tableRows, isSalesman, showAvailabilityColors],
+  );
+
+  const getExportFileName = () => {
+    const parts = [];
+    if (filters.project) parts.push(filters.project);
+    if (filters.tower) parts.push(filters.tower);
+    if (filters.floor) parts.push("floor", filters.floor);
+    if (filters.apartment) parts.push("apartment", filters.apartment);
+    return parts.length > 0 ? parts.join(" - ") : "All Projects";
   };
 
   const SelectField = ({ id, label, value, options, disabled = false }) => (
@@ -527,37 +442,6 @@ export default function ProjectFilter() {
     </div>
   );
 
-  const enrichedRows = tableRows.map((row, idx) => {
-    const statusLabel = getApartmentStatusLabel(row.appartment_available);
-
-    return {
-      ...row,
-      appartment_available: statusLabel,
-      rowClassName:
-        !isSalesman && showAvailabilityColors
-          ? getRowClassName(statusLabel)
-          : "",
-      action: (
-        <ActionCell
-          status={statusLabel}
-          onView={() => console.log("View", row)}
-          onChange={(newStatus) => handleStatusChange(idx, newStatus)}
-        />
-      ),
-    };
-  });
-
-  const getExportFileName = () => {
-    const parts = [];
-
-    if (filters.project) parts.push(filters.project);
-    if (filters.tower) parts.push(filters.tower);
-    if (filters.floor) parts.push("floor", filters.floor);
-    if (filters.apartment) parts.push("apartment", filters.apartment);
-
-    return parts.length > 0 ? parts.join(" - ") : "All Projects";
-  };
-
   return (
     <div className="project-filter">
       <div className="project-list__header">
@@ -577,7 +461,7 @@ export default function ProjectFilter() {
             id="project"
             label="Project"
             value={filters.project}
-            options={adminProjectOptions}
+            options={projectOptions}
           />
         ) : (
           <>

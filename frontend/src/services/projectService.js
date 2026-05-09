@@ -7,10 +7,11 @@ const statusMap = {
 };
 
 const projectService = {
-  getProjects: async (user_email, user_type) => {
+  getProjects: async (user_id, user_type) => {
     try {
       const response = await apiClient.get(
-        `/project/getProjects?user_email=${encodeURIComponent(user_email)}&user_type=${encodeURIComponent(user_type)}`,
+        `/project/getProjects?user_id=${encodeURIComponent(user_id)}&user_type=${encodeURIComponent(user_type)}`,
+        user_id,
       );
       console.log("projectService raw response:", response.data);
       return response.data;

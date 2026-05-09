@@ -6,13 +6,6 @@ import logo from "../../assets/Logo.png";
 import authController from "../../controllers/authController";
 import toast from "react-hot-toast";
 
-const ROLE_ROUTES = {
-  A: "/admin/dashboard",
-  C: "/dashboard",
-  CU: "/customer/dashboard",
-  S: "/salesman/dashboard",
-};
-
 const Login = () => {
   const navigate = useNavigate();
 
@@ -21,6 +14,14 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function createSlug(text) {
+    return text
+      ?.toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w-]+/g, "");
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,12 +33,10 @@ const Login = () => {
         email,
         password,
 
-        // onSuccess
         (user) => {
-          setLoading(false);
+          console.log("LOGIN SUCCESS:", user);
 
-          console.log("[Login] user object:", user);
-          console.log("[Login] user_type:", JSON.stringify(user.user_type));
+          setLoading(false);
 
           localStorage.setItem("token", user.token);
           localStorage.setItem("user_type", String(user.user_type).trim());
@@ -52,32 +51,34 @@ const Login = () => {
 
           toast.success(`Welcome, ${user.user_name}!`);
 
+          const slug = createSlug(user.user_name);
           const userType = String(user.user_type).trim();
-          const route = ROLE_ROUTES[userType];
 
-          if (!route) {
-            console.error("[Login] Unknown user_type:", userType);
-            toast.error("Unknown account type. Contact support.");
-            setLoading(false);
-            return;
-          }
+          console.log("Generated slug:", slug);
+          console.log("User type:", userType);
 
-          console.log("[Login] navigating to:", route);
-          navigate(route, { replace: true });
+          // A → device-list directly, C and S → dashboard home
+          const path =
+            userType === "A" ? `/${slug}/device-list` : `/${slug}/dashboard`;
+
+          console.log("Navigating to:", path);
+          navigate(path, { replace: true });
         },
 
-        // onError
         (message) => {
+          console.error("LOGIN ERROR:", message);
+
           setLoading(false);
           setError(message);
           toast.error(message);
         },
       );
     } catch (err) {
+      console.error("UNEXPECTED ERROR:", err);
+
       setLoading(false);
       setError("An unexpected error occurred.");
       toast.error("Login failed. Please try again.");
-      console.error("[Login] error:", err);
     }
   };
 

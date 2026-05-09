@@ -101,6 +101,7 @@ const login = async (req, res) => {
     if (user.user_type === "C") {
       const clientId = await userModel.findClientIdByEmail(user.user_email);
       user.client_id = clientId;
+      console.log("Client ID for user:", clientId);
     }
 
     res.json({ status: 1, message: "Login successful", user });
@@ -215,9 +216,72 @@ const logout = async (req, res) => {
 //   }
 // };
 
+// CHANGE PASSWORD
+const updatePassword = async (req, res) => {
+  try {
+    const { user_id, new_password } = req.body;
+
+    if (!user_id || !new_password) {
+      return res.status(400).json({
+        status: 0,
+        message: "user_id and new_password are required",
+      });
+    }
+
+    // Hash new password
+    const hashed = await hashPassword(new_password);
+
+    const updated = await userModel.changePassword(user_id, hashed);
+
+    if (updated === 0) {
+      return res.status(404).json({ status: 0, message: "User not found" });
+    }
+
+    res.json({ status: 1, message: "Password updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: 0, message: "Server Error" });
+  }
+};
+
+// CHANGE EMAIL
+const updateEmail = async (req, res) => {
+  try {
+    const { user_id, new_email } = req.body;
+
+    if (!user_id || !new_email) {
+      return res.status(400).json({
+        status: 0,
+        message: "user_id and new_email are required",
+      });
+    }
+
+    // Check new email not already taken
+    const existing = await userModel.findUserByEmail(new_email);
+    if (existing) {
+      return res
+        .status(409)
+        .json({ status: 0, message: "Email already in use" });
+    }
+
+    const updated = await userModel.changeEmail(user_id, new_email);
+
+    if (updated === 0) {
+      return res.status(404).json({ status: 0, message: "User not found" });
+    }
+
+    res.json({ status: 1, message: "Email updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: 0, message: "Server Error" });
+  }
+};
+
 module.exports = {
   signUp,
   login,
   activateUser,
   logout,
+  updatePassword,
+  updateEmail,
 };

@@ -23,9 +23,9 @@ const {
 
 const getProjects = async (req, res) => {
   try {
-    const { user_email, user_type } = req.query;
+    const { user_id, user_type } = req.query; // ✅ changed from user_email
 
-    const projects = await getAllProjects(user_email, user_type);
+    const projects = await getAllProjects(user_id, user_type);
 
     res.json({
       success: true,

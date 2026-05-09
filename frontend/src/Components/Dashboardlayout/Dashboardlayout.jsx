@@ -1,33 +1,62 @@
 import { useState, useEffect, createContext, useContext } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../Navbar/Navbar";
 import Sidebar from "../Sidebar/Sidebar";
 import usePreventDashboardExit from "../../hooks/usePreventDashboardExit";
 import "./DashboardLayout.css";
 
-// Context for controlling layout-level states like sidebar blur
 const LayoutContext = createContext(null);
 
 export function useLayout() {
   return useContext(LayoutContext);
 }
 
+function createSlug(text) {
+  return text
+    ?.toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "");
+}
+
 export default function DashboardLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    return window.innerWidth > 768;
-  });
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
   const [sidebarBlur, setSidebarBlur] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const [isValid, setIsValid] = useState(false);
 
   const navigate = useNavigate();
+  const { slug } = useParams();
+
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("user"));
+  } catch (e) {
+    console.error("Invalid user data in localStorage");
+  }
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/", { replace: true });
+      return;
+    }
+
+    const expectedSlug = createSlug(user?.user_name || "");
+
+    if (slug !== expectedSlug) {
+      console.warn("Slug mismatch → redirecting");
+      navigate("/", { replace: true });
+    } else {
+      setIsValid(true);
+    }
+  }, [slug, navigate]);
 
   useEffect(() => {
     let prevIsMobile = window.innerWidth <= 768;
 
     const handleResize = () => {
       const isMobile = window.innerWidth <= 768;
-
       if (isMobile !== prevIsMobile) {
         setSidebarOpen(!isMobile);
         prevIsMobile = isMobile;
@@ -53,16 +82,9 @@ export default function DashboardLayout() {
     navigate("/", { replace: true });
   };
 
-  const cancelLogout = () => {
-    setShowLogoutPopup(false);
-  };
+  const cancelLogout = () => setShowLogoutPopup(false);
 
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (!user) {
-      navigate("/", { replace: true });
-    }
-  }, []);
+  if (!isValid) return null;
 
   return (
     <LayoutContext.Provider value={{ setSidebarBlur }}>
@@ -80,12 +102,12 @@ export default function DashboardLayout() {
               onToggleDark={handleToggleDark}
               onToggleSidebar={() => setSidebarOpen((v) => !v)}
             />
-
             <main className="layout__main">
               <Outlet />
             </main>
           </div>
         </div>
+
         {showLogoutPopup && (
           <div className="logout-overlay">
             <div className="logout-modal">

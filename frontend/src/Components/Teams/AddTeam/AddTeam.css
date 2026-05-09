@@ -1,3 +1,5 @@
+/* AddTeam.css */
+
 /* Overlay */
 .modal-overlay {
   position: fixed;
@@ -39,12 +41,12 @@
 
 /* Header */
 .modal-header {
-  background: radial-gradient(circle at top, #3a3270, #1b1438);
+  background: var(--export-bg);
   color: white;
   padding: 20px 25px;
 }
 
-/* H1 */
+/* Heading */
 .modal-header h1 {
   margin: 0;
   font-size: 22px;
@@ -54,14 +56,14 @@
   gap: 8px;
 }
 
-/* Subtitle FIX (was wrong color) */
+/* Subtitle */
 .modal-header p {
   margin-top: 5px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8); /
+  color: rgba(255, 255, 255, 0.8);
 }
 
-/* Close Button FIX (match header) */
+/* Close Button */
 .modal-close {
   position: absolute;
   top: 14px;
@@ -84,14 +86,11 @@
   transition: all 0.25s ease;
 }
 
-.udm-close:hover {
-  background: rgba(255, 255, 255, 0.35);
-}
-
 .modal-close:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
+/* Form */
 .modal-form {
   padding: 25px;
   display: flex;
@@ -111,23 +110,27 @@
   font-size: 13px;
   margin-bottom: 6px;
   color: #475569;
+  font-weight: 500;
 }
 
-/* Input FIX */
-.form-group input {
+/* Input */
+.form-group input,
+.form-group select {
   width: 100%;
   box-sizing: border-box;
   padding: 11px 12px;
   border-radius: 8px;
-  border: 1px solid #cbd5f5;
+  border: 1px solid #cbd5e1;
   font-size: 14px;
   transition: 0.2s;
+  background: white;
 }
 
 /* Focus */
-.form-group input:focus {
-  border-color: #4361ee;
-  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #1d3e5c;
+  box-shadow: 0 0 0 3px rgba(29, 62, 92, 0.15);
   outline: none;
 }
 
@@ -141,27 +144,31 @@
 
 /* Primary Button */
 .btn-primary {
-  background: #4361ee;
+  background: #1d3e5c;
   color: white;
   border: none;
   padding: 10px 18px;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.25s ease;
+  font-weight: 500;
 }
 
 .btn-primary:hover {
-  background: #3a56d4;
+  background: #163149;
   transform: translateY(-1px);
 }
 
 /* Secondary Button */
 .btn-secondary {
   background: #e2e8f0;
+  color: #1e293b;
   border: none;
   padding: 10px 18px;
   border-radius: 8px;
   cursor: pointer;
+  transition: 0.25s ease;
+  font-weight: 500;
 }
 
 .btn-secondary:hover {

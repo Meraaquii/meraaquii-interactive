@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { MdChevronRight, MdOutlinePerson } from "react-icons/md";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { LuLayoutList, LuFilter } from "react-icons/lu";
@@ -10,27 +10,27 @@ import meraaquii from "../../assets/Logo.png";
 import smallLogo from "../../../public/fav-icon.jpg";
 import "./Sidebar.css";
 
-const MENU_CONFIG = {
+const getMenuConfig = (slug) => ({
   A: [
     {
       id: "device-list",
       name: "Device List",
       icon: <LuLayoutList className="nav-icons" />,
-      path: "/admin/dashboard/device-list",
+      path: `/${slug}/device-list`,
       type: "link",
     },
     {
       id: "project-list",
       name: "Project List",
       icon: <LuFilter className="nav-icons" />,
-      path: "/admin/dashboard/project-list",
+      path: `/${slug}/project-list`,
       type: "link",
     },
     {
       id: "client-list",
       name: "Client List",
       icon: <MdOutlinePerson className="nav-icons" />,
-      path: "/admin/dashboard/client-list",
+      path: `/${slug}/client-list`,
       type: "link",
     },
   ],
@@ -40,66 +40,63 @@ const MENU_CONFIG = {
       id: "dashboard",
       name: "Dashboard",
       icon: <MdDashboard className="nav-icons" />,
-      path: "/dashboard",
+      path: `/${slug}/dashboard`,
       type: "link",
     },
     {
       id: "device-list",
-      name: "Device List",
+      name: "User List",
       icon: <LuLayoutList className="nav-icons" />,
-      path: "/dashboard/device-list",
+      path: `/${slug}/device-list`,
       type: "link",
     },
     {
       id: "project-filter",
       name: "Project Filter",
       icon: <LuFilter className="nav-icons" />,
-      path: "/dashboard/project-filter",
+      path: `/${slug}/project-filter`,
       type: "link",
     },
     {
       id: "salesman-list",
-      name: "Salesman List",
+      name: "Salesman",
       icon: <MdOutlinePerson className="nav-icons" />,
-      path: "/dashboard/salesman-list",
-      type: "link",
-    },
-  ],
-
-  CU: [
-    {
-      id: "device-list",
-      name: "Device List",
-      icon: <LuLayoutList className="nav-icons" />,
-      path: "/customer/dashboard/device-list",
+      path: `/${slug}/salesman-list`,
       type: "link",
     },
     {
-      id: "project-filter",
-      name: "Project Filter",
-      icon: <LuFilter className="nav-icons" />,
-      path: "/customer/dashboard/project-filter",
+      id: "teams",
+      name: "Teams",
+      icon: <MdOutlinePerson className="nav-icons" />,
+      path: `/${slug}/teams`,
       type: "link",
     },
   ],
 
   S: [
     {
+      id: "dashboard",
+      name: "Dashboard",
+      icon: <MdDashboard className="nav-icons" />,
+      path: `/${slug}/dashboard`,
+      type: "link",
+    },
+    {
       id: "customer-list",
       name: "Customer List",
       icon: <MdOutlinePerson className="nav-icons" />,
-      path: "/salesman/dashboard/customer-list",
+      path: `/${slug}/customer-list`,
       type: "link",
     },
     {
       id: "project-filter",
       name: "Project Filter",
       icon: <LuFilter className="nav-icons" />,
-      path: "/salesman/dashboard/project-filter",
+      path: `/${slug}/project-filter`,
       type: "link",
     },
   ],
-};
+});
 
 const Tooltip = ({ text, targetRef, visible }) => {
   const [pos, setPos] = useState({ top: 0, left: 0 });
@@ -145,7 +142,7 @@ const MenuItem = ({ item, isActive, isExpanded, onClick }) => {
       {isActive && <div className="active-indicator" />}
 
       <Tooltip
-        //text={item.name}
+        text={item.name}
         targetRef={ref}
         visible={!isExpanded && hovered}
       />
@@ -208,6 +205,7 @@ const DropdownMenuItem = ({
 const Sidebar = ({ isVisible, onToggle, blur = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { slug } = useParams();
 
   const [activeSection, setActiveSection] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -238,6 +236,7 @@ const Sidebar = ({ isVisible, onToggle, blur = false }) => {
   const isSubItemActive = (path) => location.pathname === path;
 
   const userType = localStorage.getItem("user_type") ?? "C";
+  const MENU_CONFIG = getMenuConfig(slug);
   const menuItems = MENU_CONFIG[userType] ?? MENU_CONFIG["C"];
 
   const sidebarClass = [

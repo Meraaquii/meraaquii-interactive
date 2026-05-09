@@ -37,7 +37,6 @@ function ClientDashboard({ clientId }) {
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState("all");
 
-  // Dummy projects data for testing the filter
   const dummyProjects = [
     {
       project_name: "Ellegenza",
@@ -80,7 +79,6 @@ function ClientDashboard({ clientId }) {
           fetchProjectDetails(id),
         ]);
         setDashboardStats(data);
-        // Store API projects
         setApiProjects(projects || []);
       } catch (error) {
         console.error("ERROR:", error.response || error);
@@ -92,19 +90,16 @@ function ClientDashboard({ clientId }) {
     loadData();
   }, [clientId]);
 
-  // Combine API projects with dummy projects
   const allProjects = [...apiProjects, ...dummyProjects];
 
   if (loading) return <div>Loading Dashboard...</div>;
   if (!dashboardStats) return <div>No data found.</div>;
 
-  // Filter projects based on selected project for table
   const filteredProjects =
     selectedProject === "all"
       ? allProjects
       : allProjects.filter((p) => p.project_name === selectedProject);
 
-  // Calculate stats based on selected project
   const selectedProjectData =
     selectedProject === "all"
       ? null
@@ -150,7 +145,7 @@ function ClientDashboard({ clientId }) {
           class: "blue",
         },
         {
-          label: "Total Devices",
+          label: "Total Users",
           value: dashboardStats.total_devices ?? 0,
           class: "purple",
         },
@@ -159,11 +154,11 @@ function ClientDashboard({ clientId }) {
           value: dashboardStats.total_salesman ?? 0,
           class: "pink",
         },
-        {
-          label: "Total Customers",
-          value: dashboardStats.total_customers ?? 0,
-          class: "orange",
-        },
+        // {
+        //   label: "Total Customers",
+        //   value: dashboardStats.total_customers ?? 0,
+        //   class: "orange",
+        // },
         {
           label: "Total Apartments",
           value: dashboardStats.total_apartments ?? 0,

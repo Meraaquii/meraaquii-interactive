@@ -7,11 +7,11 @@ import { updateDevice } from "../../../services/deviceService";
 import projectService from "../../../services/projectService.js";
 import toast from "react-hot-toast";
 
-const DUMMY_PROJECTS = [
-  { id: "dummy-1", name: "District 25 Phase 3" },
-  { id: "dummy-2", name: "Millenia" },
-  { id: "dummy-3", name: "Ellegenza" },
-];
+// const DUMMY_PROJECTS = [
+//   { id: "dummy-1", name: "District 25 Phase 3" },
+//   { id: "dummy-2", name: "Millenia" },
+//   { id: "dummy-3", name: "Ellegenza" },
+// ];
 
 function UpdateDeviceModal({ isOpen, onClose, device, onSubmit }) {
   const [formData, setFormData] = useState({
@@ -35,9 +35,8 @@ function UpdateDeviceModal({ isOpen, onClose, device, onSubmit }) {
     const fetchProjects = async () => {
       try {
         const clientId = device.clientId ?? device.client_id;
-
         if (!clientId) {
-          setProjects(DUMMY_PROJECTS);
+          setProjects([]);
           return;
         }
 
@@ -47,48 +46,33 @@ function UpdateDeviceModal({ isOpen, onClose, device, onSubmit }) {
         );
 
         if (!matchedClient) {
-          setProjects(DUMMY_PROJECTS);
+          setProjects([]);
           return;
         }
 
-        const clientEmail =
-          matchedClient.client_email ??
-          matchedClient.user_email ??
-          matchedClient.email;
-
-        if (!clientEmail) {
-          setProjects(DUMMY_PROJECTS);
-          return;
-        }
-
+        const userIdForApi =
+          matchedClient.client_id ?? matchedClient.user_id ?? matchedClient.id;
         const clientType =
           matchedClient.client_type ?? matchedClient.user_type ?? "C";
-        const res = await projectService.getProjects(clientEmail, clientType);
+
+        const res = await projectService.getProjects(userIdForApi, clientType);
 
         const projectArray =
-          (res.data && Array.isArray(res.data) ? res.data : []) ||
-          (res.projects && Array.isArray(res.projects) ? res.projects : []);
+          res.data || res.projects || (Array.isArray(res) ? res : []);
 
         const normalized = projectArray.map((p) => ({
           id: String(p.id ?? p.project_id),
           name: p.name ?? p.project_name,
         }));
 
-        const realProjects = Array.from(
+        const uniqueProjects = Array.from(
           new Map(normalized.map((p) => [p.id, p])).values(),
         );
 
-        // Always merge real projects with dummy projects
-        // Dummy projects are added only if not already present by name
-        const realNames = new Set(realProjects.map((p) => p.name));
-        const filteredDummy = DUMMY_PROJECTS.filter(
-          (d) => !realNames.has(d.name),
-        );
-
-        setProjects([...realProjects, ...filteredDummy]);
+        setProjects(uniqueProjects);
       } catch (error) {
         console.error("Error fetching projects:", error);
-        setProjects(DUMMY_PROJECTS);
+        setProjects([]);
       }
     };
 
@@ -146,8 +130,6 @@ function UpdateDeviceModal({ isOpen, onClose, device, onSubmit }) {
       availableProjectIds.includes(id),
     );
 
-    // Auto-select "D25-Phase 2-Demo" / "District 25 Phase 2" by default
-    // if no existing project ids are already set
     if (validProjectIds.length === 0) {
       const defaultProject = projects.find(
         (p) =>
@@ -236,7 +218,7 @@ function UpdateDeviceModal({ isOpen, onClose, device, onSubmit }) {
         <form className="udm-form" onSubmit={handleSubmit}>
           <div className="udm-form-grid">
             <div className="udm-form-group">
-              <label>Device Name</label>
+              <label>Login Id</label>
               <input
                 type="text"
                 name="deviceName"
@@ -247,7 +229,7 @@ function UpdateDeviceModal({ isOpen, onClose, device, onSubmit }) {
             </div>
 
             <div className="udm-form-group">
-              <label>Device Password</label>
+              <label>Login Password</label>
               <input
                 type="text"
                 name="devicePassword"
