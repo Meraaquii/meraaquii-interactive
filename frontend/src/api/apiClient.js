@@ -11,6 +11,9 @@ const apiClient = axios.create({
   },
 });
 
+// api/apiClient.js
+console.log(apiClient.defaults.baseURL);
+
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");

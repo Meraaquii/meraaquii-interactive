@@ -4,21 +4,34 @@ import { TbEdit } from "react-icons/tb";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { IoPersonAddOutline } from "react-icons/io5";
+import { toast } from "react-hot-toast";
+import DeleteConfirmation from "../DeleteConfirmModal/DeleteConfirmModal";
 
 import "./Teams.css";
 
 import ExportButton from "../ExportButton/ExportButton";
 import AddTeam from "../Teams/AddTeam/AddTeam";
 import TeamView from "./TeamView/TeamView";
+import TeamUpdate from "../Teams/TeamUpdate/TeamUpdate";
 
-import { getTeamsController } from "../../controllers/teamController";
+import {
+  getTeamsController,
+  deleteTeamController,
+} from "../../controllers/teamController";
 
 function Teams() {
   const [showModal, setShowModal] = useState(false);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTeam, setDeleteTeam] = useState(null);
 
+  // View Modal
   const [showViewModal, setShowViewModal] = useState(false);
+
+  // Update Modal
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
   const [selectedTeam, setSelectedTeam] = useState(null);
 
   // Fetch Teams
@@ -34,7 +47,11 @@ function Teams() {
 
       const formattedData = teamData.map((item) => ({
         id: item.id,
+        team_id: item.id,
+        team_name: item.team_name,
+
         teamName: item.team_name,
+
         createdAt: new Date(item.created_at).toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "short",
@@ -67,11 +84,33 @@ function Teams() {
   // Edit
   const handleEdit = (row) => {
     console.log("Edit:", row);
+
+    setSelectedTeam(row);
+    setShowUpdateModal(true);
   };
 
-  // Delete
+  // Open Delete Modal
   const handleDelete = (row) => {
-    console.log("Delete:", row);
+    setDeleteTeam(row);
+    setShowDeleteModal(true);
+  };
+
+  // Confirm Delete
+  const confirmDeleteTeam = async () => {
+    try {
+      await deleteTeamController(deleteTeam.team_id);
+
+      toast.success("Team deleted successfully");
+
+      fetchTeams();
+
+      setShowDeleteModal(false);
+      setDeleteTeam(null);
+    } catch (error) {
+      console.log("Delete Error:", error);
+
+      toast.error(error?.response?.data?.message || "Failed to delete team");
+    }
   };
 
   // Table Columns
@@ -143,6 +182,18 @@ function Teams() {
         <AddTeam onClose={() => setShowModal(false)} refreshData={fetchTeams} />
       )}
 
+      {/* Update Team Modal */}
+      {showUpdateModal && selectedTeam && (
+        <TeamUpdate
+          team={selectedTeam}
+          onClose={() => {
+            setShowUpdateModal(false);
+            setSelectedTeam(null);
+          }}
+          refreshData={fetchTeams}
+        />
+      )}
+
       {/* Team View Modal */}
       {showViewModal && selectedTeam && (
         <TeamView
@@ -153,6 +204,17 @@ function Teams() {
           }}
         />
       )}
+
+      {/* Delete Modal */}
+      <DeleteConfirmation
+        isOpen={showDeleteModal}
+        name={deleteTeam?.teamName}
+        onConfirm={confirmDeleteTeam}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setDeleteTeam(null);
+        }}
+      />
     </div>
   );
 }

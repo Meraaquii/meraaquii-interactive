@@ -13,8 +13,11 @@ const clientDashboardRoutes = require("./routes/clientDashboardRoutes.js");
 const analyticsRoutes = require("./routes/analyticsRoutes.js");
 const teamRoutes = require("./routes/teamRoute.js");
 const salespersonRoute = require("./routes/salespersonRoute.js");
+const projectFilterRoutes = require("./Routes/ProjectFilterRoutes");
 
 dotenv.config();
+require("./cron");
+
 const BASE_URL = "/v1/api";
 
 const app = express();
@@ -37,6 +40,7 @@ app.use(`${BASE_URL}/dashboard`, clientDashboardRoutes);
 app.use(`${BASE_URL}/analytics`, analyticsRoutes);
 app.use(`${BASE_URL}/teams`, teamRoutes);
 app.use(`${BASE_URL}/salesperson`, salespersonRoute);
+app.use(`${BASE_URL}/project-filter`, projectFilterRoutes);
 
 const PORT = 5500;
 app.listen(PORT, () => {

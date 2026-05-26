@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import "./StatusUpdateConfirm.css";
 
 export default function StatusUpdateConfirm({
@@ -6,10 +7,10 @@ export default function StatusUpdateConfirm({
   onClose,
   onConfirm,
   name,
+  status,
 }) {
   const [loading, setLoading] = useState(false);
 
-  // ✅ Reset loading when modal closes
   useEffect(() => {
     if (!isOpen) {
       setLoading(false);
@@ -20,13 +21,19 @@ export default function StatusUpdateConfirm({
 
   const handleConfirm = async () => {
     if (loading) return;
+
     try {
       setLoading(true);
+
+      // ONLY OPEN NEXT MODAL
+      // DO NOT UPDATE STATUS HERE
       await onConfirm();
+
+      onClose();
     } catch (err) {
-      console.error("Confirm failed:", err);
+      console.error(err);
     } finally {
-      setLoading(false); // ✅ always reset
+      setLoading(false);
     }
   };
 
@@ -34,15 +41,29 @@ export default function StatusUpdateConfirm({
     <div
       className="status-update-modal-overlay"
       onClick={(e) => {
-        if (e.target === e.currentTarget && !loading) onClose();
+        if (e.target === e.currentTarget && !loading) {
+          onClose();
+        }
       }}
     >
       <div className="status-update-modal">
-        <h3 className="status-update-title">Confirm Status Update</h3>
+        <h3 className="status-update-title">
+          {status === "Reserve"
+            ? "Confirm Reservation"
+            : "Confirm Status Update"}
+        </h3>
 
         <p className="status-update-message">
-          Are you sure you want to update the status for <strong>{name}</strong>
-          ?
+          {status === "Reserve" ? (
+            <>
+              Are you sure you want to reserve <strong>{name}</strong> ?
+            </>
+          ) : (
+            <>
+              Are you sure you want to update status for <strong>{name}</strong>{" "}
+              ?
+            </>
+          )}
         </p>
 
         <div className="update-actions">
@@ -52,7 +73,7 @@ export default function StatusUpdateConfirm({
             onClick={handleConfirm}
             disabled={loading}
           >
-            {loading ? "Updating..." : "Yes"}
+            {loading ? "Loading..." : "Yes"}
           </button>
 
           <button

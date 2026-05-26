@@ -5,7 +5,8 @@ import ExportButton from "../ExportButton/ExportButton";
 import projectService from "../../services/projectService";
 import adminService from "../../services/Adminservice";
 import { fetchSalesman } from "../../services/salesmanService";
-import StatusUpdateConfirm from "../Projectfilter/StatusUpdateConfirm/StatusUpdateConfirm";
+import AddProjectFilterModal from "../Projectfilter/AddProjectFilterModal/AddProjectFilterModal";
+import { addProjectFilterController } from "../../controllers/projectController";
 import toast from "react-hot-toast";
 import "./ProjectFilter.css";
 
@@ -35,7 +36,6 @@ const SALESMAN_COLUMNS = [
   { key: "flat_type_name", label: "Type of Unit", width: "110px" },
 ];
 
-// ─── Parse user ONCE outside the component ─────────────────────────────────
 function getStoredUser() {
   try {
     const raw = localStorage.getItem("user");
@@ -99,7 +99,6 @@ function getRowClassName(label) {
 }
 
 export default function ProjectFilter() {
-  // ── Read user data once; stable across renders ──────────────────────────
   const user = useMemo(() => getStoredUser(), []);
   const userType = user?.user_type ?? "";
   const isAdmin = userType === "A";
@@ -111,7 +110,6 @@ export default function ProjectFilter() {
       ? SALESMAN_COLUMNS
       : CLIENT_COLUMNS;
 
-  // ── State ─────────────────────────────────────────────────────────────────
   const [filters, setFilters] = useState({
     project: "",
     tower: "",
@@ -119,27 +117,23 @@ export default function ProjectFilter() {
     apartment: "",
   });
   const [projects, setProjects] = useState([]);
-  const [allProjectNames, setAllProjectNames] = useState([]); // ALL project names including those with no apartments
+  const [allProjectNames, setAllProjectNames] = useState([]);
   const [tableRows, setTableRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingChange, setPendingChange] = useState(null);
   const [showAvailabilityColors, setShowAvailabilityColors] = useState(true);
 
+  // Reserve flow state
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [selectedReserveRow, setSelectedReserveRow] = useState(null);
+
+  // ── Data loading ──────────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       setLoading(true);
       setError(null);
-
-      console.log("=== LOAD CALLED ===", {
-        userType,
-        user_id: user?.user_id,
-        isAdmin,
-        isSalesman,
-      });
 
       try {
         let list = [];
@@ -154,7 +148,6 @@ export default function ProjectFilter() {
         } else if (isSalesman) {
           const user_id = user?.user_id;
           if (!user_id) throw new Error("user_id missing for salesman.");
-
           const data = await fetchSalesman({ user_type: "S", user_id });
           list = Array.isArray(data)
             ? data.map((item) => ({
@@ -174,14 +167,10 @@ export default function ProjectFilter() {
         } else {
           const client_id = user?.client_id;
           if (!client_id) throw new Error("client_id missing for client.");
-
           const response = await projectService.getProjects(
             client_id,
             userType,
           );
-
-          console.log("Client raw response:", response);
-
           const rawArray =
             response?.success && Array.isArray(response.data)
               ? response.data
@@ -189,15 +178,12 @@ export default function ProjectFilter() {
                 ? response
                 : [];
 
-          console.log("Client rawArray length:", rawArray.length);
-
-          const uniqueProjectNames = [
-            ...new Set(
-              rawArray.map((item) => item.project_name).filter(Boolean),
-            ),
-          ];
-
-          if (!cancelled) setAllProjectNames(uniqueProjectNames);
+          if (!cancelled)
+            setAllProjectNames([
+              ...new Set(
+                rawArray.map((item) => item.project_name).filter(Boolean),
+              ),
+            ]);
 
           list = rawArray
             .filter((item) => item.apart_id != null)
@@ -212,18 +198,14 @@ export default function ProjectFilter() {
               appartment_available: item.appartment_available ?? "Y",
               flat_type_name: item.flat_type_name || "—",
             }));
-
-          console.log("Client normalised list length:", list.length);
-          if (list.length > 0) console.log("Sample row:", list[0]);
         }
 
         if (!cancelled) {
           setProjects(list);
           setTableRows(list);
-          console.log("=== DONE — projects set:", list.length, "rows ===");
         }
       } catch (err) {
-        console.error("=== FETCH ERROR ===", err);
+        console.error(err);
         if (!cancelled) {
           setError(err.message || "Failed to fetch projects.");
           setProjects([]);
@@ -240,6 +222,7 @@ export default function ProjectFilter() {
     };
   }, [isAdmin, isSalesman, user?.user_id]);
 
+  // ── Filter options ────────────────────────────────────────────────────────
   const projectOptions = useMemo(() => allProjectNames, [allProjectNames]);
 
   const towerOptions = useMemo(
@@ -289,7 +272,6 @@ export default function ProjectFilter() {
 
   useEffect(() => {
     let filtered = [...projects];
-
     if (isAdmin) {
       if (filters.project)
         filtered = filtered.filter((r) => r.project_name === filters.project);
@@ -305,7 +287,6 @@ export default function ProjectFilter() {
           (r) => r.apartment_name === filters.apartment,
         );
     }
-
     setTableRows(filtered);
   }, [filters, projects, isAdmin]);
 
@@ -327,28 +308,27 @@ export default function ProjectFilter() {
     });
   };
 
+  // ── Status change ─────────────────────────────────────────────────────────
   const handleStatusChange = (rowIndex, newStatus) => {
     const row = tableRows[rowIndex];
-    console.log("Status change →", {
-      rowIndex,
-      apart_id: row?.apart_id,
-      newStatus,
-    });
-    setPendingChange({ row, newStatus });
-    setConfirmOpen(true);
-  };
-
-  const confirmStatusUpdate = async () => {
-    if (!pendingChange) return;
-    const { row, newStatus } = pendingChange;
 
     if (!row?.apart_id) {
-      toast.error("Apartment ID missing. Cannot update.");
-      setConfirmOpen(false);
-      setPendingChange(null);
+      toast.error("Apartment ID missing.");
       return;
     }
 
+    if (newStatus === "Reserve") {
+      // Open filter form directly — no confirm modal
+      setSelectedReserveRow(row);
+      setFilterModalOpen(true);
+      return;
+    }
+
+    // Available / Booked → update status directly
+    updateApartmentStatus(row, newStatus);
+  };
+
+  const updateApartmentStatus = async (row, newStatus) => {
     try {
       const response = await projectService.updateApartmentStatus({
         apartment_id: row.apart_id,
@@ -357,36 +337,104 @@ export default function ProjectFilter() {
 
       if (response?.message) {
         toast.success(response.message || "Status updated successfully");
-
         const newCode = STATUS_LABEL_TO_CODE[newStatus];
-
-        const updater = (prev) =>
+        setProjects((prev) =>
           prev.map((r) =>
             r.apart_id === row.apart_id
               ? { ...r, appartment_available: newCode }
               : r,
-          );
-        setProjects(updater);
-        setTableRows(updater);
+          ),
+        );
+        setTableRows((prev) =>
+          prev.map((r) =>
+            r.apart_id === row.apart_id
+              ? { ...r, appartment_available: newCode }
+              : r,
+          ),
+        );
       } else {
         toast.error("Update failed.");
       }
     } catch (err) {
-      console.error("confirmStatusUpdate error:", err);
+      console.error(err);
       toast.error("Something went wrong.");
-    } finally {
-      setConfirmOpen(false);
-      setPendingChange(null);
     }
   };
 
+  const handleReserveFinalSubmit = async (formData) => {
+    console.log("7. handleReserveFinalSubmit — formData:", formData);
+    console.log("8. selectedReserveRow:", selectedReserveRow);
+
+    const row = selectedReserveRow;
+
+    if (!row?.apart_id) {
+      console.log("9. ERROR: apart_id missing");
+      toast.error("Apartment ID missing.");
+      return false;
+    }
+
+    const payload = {
+      team_id: formData.team,
+      salesperson_id: formData.salesperson,
+      apartment_id: row.apart_id,
+      date: formData.date,
+      remarks: formData.remarks,
+    };
+
+    console.log("10. PAYLOAD:", payload);
+
+    try {
+      console.log("11. CALLING addProjectFilterController...");
+      const filterResponse = await addProjectFilterController(payload);
+      console.log("12. filterResponse:", filterResponse);
+
+      if (!filterResponse?.success) {
+        toast.error(filterResponse?.message || "Failed to save filter");
+        return false;
+      }
+
+      console.log("13. CALLING updateApartmentStatus...");
+      const statusResponse = await projectService.updateApartmentStatus({
+        apartment_id: row.apart_id,
+        status: "Reserve",
+      });
+      console.log("14. statusResponse:", statusResponse);
+
+      if (!statusResponse?.message) {
+        toast.error("Failed to update status");
+        return false;
+      }
+
+      toast.success("Flat reserved successfully");
+
+      setProjects((prev) =>
+        prev.map((r) =>
+          r.apart_id === row.apart_id ? { ...r, appartment_available: "R" } : r,
+        ),
+      );
+      setTableRows((prev) =>
+        prev.map((r) =>
+          r.apart_id === row.apart_id ? { ...r, appartment_available: "R" } : r,
+        ),
+      );
+
+      return true;
+    } catch (err) {
+      console.error("15. CATCH ERR:", err);
+      console.error("15. CATCH ERR message:", err?.message);
+      console.error("15. CATCH ERR response:", err?.response?.data);
+      console.error("15. CATCH ERR status:", err?.response?.status);
+      toast.error(err?.response?.data?.message || "Something went wrong");
+      return false; // never throw — always return false so modal handles it
+    }
+  };
+
+  // ── Enriched rows ─────────────────────────────────────────────────────────
   const enrichedRows = useMemo(
     () =>
       tableRows.map((row, idx) => {
-        // For admin rows there is no appartment_available field
         const rawCode = row.appartment_available;
         const statusLabel = getApartmentStatusLabel(rawCode);
-
         return {
           ...row,
           appartment_available: statusLabel,
@@ -442,6 +490,7 @@ export default function ProjectFilter() {
     </div>
   );
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="project-filter">
       <div className="project-list__header">
@@ -517,14 +566,14 @@ export default function ProjectFilter() {
         </div>
       )}
 
-      <StatusUpdateConfirm
-        isOpen={confirmOpen}
+      {/* AddProjectFilterModal — Reserve opens this directly, no confirm modal */}
+      <AddProjectFilterModal
+        isOpen={filterModalOpen}
         onClose={() => {
-          setConfirmOpen(false);
-          setPendingChange(null);
+          setFilterModalOpen(false);
+          setSelectedReserveRow(null);
         }}
-        onConfirm={confirmStatusUpdate}
-        name={pendingChange?.row?.apartment_name || "this apartment"}
+        onFinalSubmit={handleReserveFinalSubmit}
       />
     </div>
   );
